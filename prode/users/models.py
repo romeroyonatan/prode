@@ -15,3 +15,11 @@ class User(AbstractUser):
 
     def get_absolute_url(self):
         return reverse("users:detail", kwargs={"username": self.username})
+
+    def get_puntaje(self):
+        """Obtiene el puntaje de todas sus apuestas."""
+        apuestas = self.apuestas.filter(
+            partido__goles_local__isnull=False,
+            partido__goles_visitante__isnull=False,
+        )
+        return sum(apuesta.puntaje for apuesta in apuestas)
