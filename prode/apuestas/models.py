@@ -41,10 +41,10 @@ class Partido(models.Model):
 
     @property
     def resultado(self):
-        """Devulve si gano local, visitante o si fue empate."""
+        """Devuelve si gano local, visitante o si fue empate."""
         # no esta definido el resultado del partido
         if self.goles_local is None or self.goles_visitante is None:
-            raise ValueError('No estan definido el resultado del partido')
+            raise ValueError('No está definido el resultado del partido')
         # definir quien gano
         if self.goles_local > self.goles_visitante:
             return GANA_LOCAL
@@ -79,6 +79,7 @@ class Apuesta(models.Model):
         (GANA_VISITANTE, 'Gana {visitante}'),
     )
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                related_name='apuestas',
                                 on_delete=models.CASCADE)
     partido = models.ForeignKey(Partido,
                                 related_name='apuestas',
