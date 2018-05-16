@@ -25,6 +25,9 @@ class Etapa(models.Model):
     # usuarios para apostar
     publica = models.BooleanField()
 
+    def __str__(self):
+        return f'{self.nombre}'
+
 
 class Partido(models.Model):
     """Define un partido del fixture."""
@@ -51,6 +54,9 @@ class Partido(models.Model):
         elif self.goles_local < self.goles_visitante:
             return GANA_VISITANTE
         return EMPATE
+
+    def __str__(self):
+        return f'{self.local.name} - {self.visitante.name}'
 
 
 class Apuesta(models.Model):
@@ -89,6 +95,10 @@ class Apuesta(models.Model):
                                default=EMPATE)
     goles_local = models.PositiveSmallIntegerField(default=0)
     goles_visitante = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        # me aseguro que solo exista una apuesta por partido por usuario
+        unique_together = ('usuario', 'partido')
 
     @property
     def puntaje(self):

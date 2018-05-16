@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ etapa }}{% endblock %}
+
+{% block content %}
+  <h1>Apuestas para la etapa {{ etapa }}</h1>
+  <form class="form-horizontal" method="post" action=".">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <div class="row">
+    {% for form in formset %}
+      <div class="col-sm-4" style="margin-top: 1rem">
+        <div class="card {% cycle 'border-primary' 'border-success' 'border-secondary' 'border-warning' 'border-danger' 'border-info' 'border-light' 'border-dark' %}">
+          <div class="card-body">
+            <h5 class="card-title">
+              {{ form.partido.local.name }}
+              <img src="{{ form.partido.local.flag }}" >
+              {{ form.partido.visitante.name }} - 
+              <img src="{{ form.partido.visitante.flag }}" >
+            </h5>
+            <h6 class="card-subtitle mb-2 text-muted">Fecha-hora</h6>
+            <p class="card-text">{{ form|crispy }}</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-success">Guardar</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}
