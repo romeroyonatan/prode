@@ -23,7 +23,7 @@ class TestUser(TestCase):
         self.assertEqual(self.user.get_puntaje(), puntaje)
 
     def test_get_puntaje_partidos_sin_definir(self):
-        apuestas = factories.ApuestaFactory.create_batch(
+        factories.ApuestaFactory.create_batch(
             10,
             usuario=self.user,
             partido__goles_local=None,
