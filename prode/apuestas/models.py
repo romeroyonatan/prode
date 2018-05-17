@@ -43,11 +43,16 @@ class Partido(models.Model):
     goles_local = models.PositiveSmallIntegerField(null=True)
     goles_visitante = models.PositiveSmallIntegerField(null=True)
 
+    def terminado(self):
+        """Se asume partido terminado cuando se cargan los resultados."""
+        return (self.goles_local is not None and
+                self.goles_visitante is not None)
+
     @property
     def resultado(self):
         """Devuelve si gano local, visitante o si fue empate."""
         # no esta definido el resultado del partido
-        if self.goles_local is None or self.goles_visitante is None:
+        if not self.terminado():
             raise ValueError('No está definido el resultado del partido')
         # definir quien gano
         if self.goles_local > self.goles_visitante:
@@ -58,6 +63,9 @@ class Partido(models.Model):
 
     def __str__(self):
         return f'{self.local.name} - {self.visitante.name}'
+
+    class Meta:
+        ordering = ('fecha',)
 
 
 class Apuesta(models.Model):
@@ -101,6 +109,14 @@ class Apuesta(models.Model):
         # me aseguro que solo exista una apuesta por partido por usuario
         unique_together = ('usuario', 'partido')
 
+    def get_ganador_display(self):
+        """Obtiene el ganador de forma bonita para mostrar"""
+        if self.ganador == GANA_LOCAL:
+            return self.partido.local.name
+        if self.ganador == GANA_VISITANTE:
+            return self.partido.visitante.name
+        return 'Empate'
+
     @property
     def puntaje(self):
         """Devuelve los puntos obtenidos por la apuesta.
@@ -126,3 +142,6 @@ class Apuesta(models.Model):
 
     def __str__(self):
         return f'Apuesta "{self.partido}" por {self.usuario}'
+
+    class Meta:
+        ordering = ('usuario__username',)
