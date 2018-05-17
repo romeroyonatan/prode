@@ -4,6 +4,12 @@ from prode.apuestas import models
 from . import factories
 
 
+class Etapa(TestCase):
+    def test_str(self):
+        etapa = factories.EtapaFactory.build(nombre='Octavos de final')
+        self.assertEqual(str(etapa), 'Octavos de final')
+
+
 class PartidoTests(TestCase):
     def test_resultado_empate(self):
         partido = factories.PartidoFactory(goles_local=1, goles_visitante=1)
@@ -22,6 +28,10 @@ class PartidoTests(TestCase):
                                            goles_visitante=None)
         with self.assertRaises(ValueError):
             partido.resultado
+
+    def test_str(self):
+        partido = factories.PartidoFactory.build(local='AR', visitante='BR')
+        self.assertEqual(str(partido), 'Argentina - Brazil')
 
 
 class ApuestaTests(TestCase):
@@ -72,3 +82,10 @@ class ApuestaTests(TestCase):
                                            goles_visitante=1,
                                            ganador=models.GANA_VISITANTE)
         self.assertEqual(apuesta.puntaje, 4)
+
+    def test_str(self):
+        apuesta = factories.ApuestaFactory(partido__local='AR',
+                                           partido__visitante='BR',
+                                           usuario__username='fulano')
+        self.assertEqual(str(apuesta),
+                         'Apuesta "Argentina - Brazil" por fulano')

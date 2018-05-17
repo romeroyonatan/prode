@@ -25,6 +25,9 @@ class Etapa(models.Model):
     # usuarios para apostar
     publica = models.BooleanField()
 
+    def __str__(self):
+        return f'{self.nombre}'
+
 
 class Partido(models.Model):
     """Define un partido del fixture."""
@@ -33,6 +36,7 @@ class Partido(models.Model):
                               related_name='partidos',
                               on_delete=models.SET_NULL)
     # estos campos se definen cuando se crea la etapa
+    fecha = models.DateTimeField()
     local = CountryField()
     visitante = CountryField()
     # estos campos se definen cuando la etapa esta cerrada
@@ -51,6 +55,9 @@ class Partido(models.Model):
         elif self.goles_local < self.goles_visitante:
             return GANA_VISITANTE
         return EMPATE
+
+    def __str__(self):
+        return f'{self.local.name} - {self.visitante.name}'
 
 
 class Apuesta(models.Model):
@@ -75,8 +82,8 @@ class Apuesta(models.Model):
     """
     CHOICE_RESULTADO = (
         (EMPATE, 'Empate'),
-        (GANA_LOCAL, 'Gana {local}'),
-        (GANA_VISITANTE, 'Gana {visitante}'),
+        (GANA_LOCAL, 'Gana local'),
+        (GANA_VISITANTE, 'Gana visitante'),
     )
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 related_name='apuestas',
@@ -89,6 +96,10 @@ class Apuesta(models.Model):
                                default=EMPATE)
     goles_local = models.PositiveSmallIntegerField(default=0)
     goles_visitante = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        # me aseguro que solo exista una apuesta por partido por usuario
+        unique_together = ('usuario', 'partido')
 
     @property
     def puntaje(self):
@@ -112,3 +123,6 @@ class Apuesta(models.Model):
                 self.goles_visitante == goles_visitante):
             puntos += 3
         return puntos
+
+    def __str__(self):
+        return f'Apuesta "{self.partido}" por {self.usuario}'
