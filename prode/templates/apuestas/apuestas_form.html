@@ -4,7 +4,8 @@
 {% block title %}{{ etapa }}{% endblock %}
 
 {% block content %}
-  <h1>Apuestas para la etapa {{ etapa }}</h1>
+  <h1>Apuestas para {{ etapa|upper }}</h1>
+  <p>Tiempo restante para apostar: <strong title="{{ etapa.vencimiento }}">{{ etapa.vencimiento|timeuntil }}</strong></p>
   <form class="form-horizontal" method="post" action=".">
     {% csrf_token %}
     {{ formset.management_form }}

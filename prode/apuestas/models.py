@@ -125,4 +125,4 @@ class Apuesta(models.Model):
         return puntos
 
     def __str__(self):
-        return f'Apuesta partido "{self.partido}" por {self.usuario}'
+        return f'Apuesta "{self.partido}" por {self.usuario}'
