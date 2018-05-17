@@ -20,13 +20,17 @@ class ApuestaForm(forms.ModelForm):
 
         En vez de mostrar `local` o `visitante` muestra el nombre del pais
         """
+        local = self.partido.local.name
+        visitante = self.partido.visitante.name
+        # cambio choices del ganador
         self.fields['ganador'].choices = (
             (models.EMPATE, 'Empate'),
-            (models.GANA_LOCAL, f'Gana {self.partido.local.name}'),
-            (models.GANA_VISITANTE, f'Gana {self.partido.visitante.name}'),
+            (models.GANA_LOCAL, f'Gana {local}'),
+            (models.GANA_VISITANTE, f'Gana {visitante}'),
         )
-        self.fields['goles_local'].label = self.partido.local.name
-        self.fields['goles_visitante'].label = self.partido.visitante.name
+        # cambio labels de goles
+        self.fields['goles_local'].label = local
+        self.fields['goles_visitante'].label = visitante
 
     def save(self, commit=True):
         """Guarda apuesta. Asocia partido y usuario pasado por constructor"""

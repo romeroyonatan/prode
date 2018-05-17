@@ -36,6 +36,7 @@ class Partido(models.Model):
                               related_name='partidos',
                               on_delete=models.SET_NULL)
     # estos campos se definen cuando se crea la etapa
+    fecha = models.DateTimeField()
     local = CountryField()
     visitante = CountryField()
     # estos campos se definen cuando la etapa esta cerrada
@@ -81,8 +82,8 @@ class Apuesta(models.Model):
     """
     CHOICE_RESULTADO = (
         (EMPATE, 'Empate'),
-        (GANA_LOCAL, 'Gana {local}'),
-        (GANA_VISITANTE, 'Gana {visitante}'),
+        (GANA_LOCAL, 'Gana local'),
+        (GANA_VISITANTE, 'Gana visitante'),
     )
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 related_name='apuestas',
@@ -122,3 +123,6 @@ class Apuesta(models.Model):
                 self.goles_visitante == goles_visitante):
             puntos += 3
         return puntos
+
+    def __str__(self):
+        return f'Apuesta partido "{self.partido}" por {self.usuario}'
