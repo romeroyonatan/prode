@@ -44,7 +44,7 @@ class ApuestaManager(Manager):
             self.get_queryset()
             .filter(partido__etapa=etapa)
             .annotate(
-                # Logica del puntaje
+                # Puntos por ganador
                 puntos_ganador=Case(
                     When(ganador=GANA_LOCAL,
                          partido__goles_local__gt=F('partido__goles_visitante'),
@@ -58,6 +58,7 @@ class ApuestaManager(Manager):
                     default=0,
                     output_field=PositiveSmallIntegerField(),
                 ),
+                # Puntos por goles
                 puntos_goles=Case(
                     When(goles_local=F('partido__goles_local'),
                          goles_visitante=F('partido__goles_visitante'),
@@ -74,5 +75,5 @@ class ApuestaManager(Manager):
             (user, sum(puntos for _, puntos in group))
             for user, group in itertools.groupby(queryset, key=por_usuario)
         ]
-        # ordeno por cantidad de puntos descendente
+        # ordeno por cantidad de puntos de mayor a menor
         return sorted(puntajes_sumados, key=por_puntaje)
