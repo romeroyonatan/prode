@@ -74,3 +74,15 @@ class ApuestaBaseFormSet(forms.BaseFormSet):
         if not apuesta.exists():
             return None
         return apuesta.get()
+
+
+class EtapaForm(forms.ModelForm):
+    class Meta:
+        model = models.Etapa
+        fields = ('publica', 'nombre', 'vencimiento', 'slug')
+
+
+class PartidoForm(forms.ModelForm):
+    class Meta:
+        model = models.Partido
+        fields = ('fecha', 'local', 'visitante')

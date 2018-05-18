@@ -23,3 +23,10 @@ class ApuestasURLSTests(TestCase):
         self.assertEqual(reverse('apuestas:detail',
                                  kwargs={'slug': 'cuartos'}),
                          '/apuestas/etapas/cuartos/')
+
+    def test_resolve_create(self):
+        self.assertEqual(resolve('/apuestas/etapas/crear/').view_name,
+                         'apuestas:create')
+
+    def test_reverse_create(self):
+        self.assertEqual(reverse('apuestas:create'), '/apuestas/etapas/crear/')

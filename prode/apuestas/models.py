@@ -18,12 +18,22 @@ class Etapa(models.Model):
     El tiempo en el que se puede apostar esta definido por el atributo
     ``vencimiento``.
     """
-    nombre = models.CharField(max_length=255)
-    vencimiento = models.DateTimeField()
-    slug = models.SlugField()
+    nombre = models.CharField(max_length=255,
+                              help_text="Por ejemplo 'Fase de grupos'")
+    vencimiento = models.DateTimeField(help_text="""Fecha-hora hasta que será
+    permitido apostar. Idealmente debe ser antes que empiece el primer partido
+    de la etapa. [dd/mm/aaaa hh:mm]""")
+    slug = models.SlugField(
+        help_text="""Texto que se mostrara en la url, por
+    ejemplo si el slug fuera 'fase-de-grupos' la URL sería
+    '/apuestas/etapas/fase-de-grupos/'""",
+        unique=True
+    )
     # define en que momento la etapa esta lista para ser presentada a los
     # usuarios para apostar
-    publica = models.BooleanField()
+    publica = models.BooleanField(help_text="""
+    Tildar cuando la etapa este lista para ser mostrada a los apostadores para
+    que empiecen a apostar""")
 
     def __str__(self):
         return f'{self.nombre}'
@@ -36,9 +46,14 @@ class Partido(models.Model):
                               related_name='partidos',
                               on_delete=models.SET_NULL)
     # estos campos se definen cuando se crea la etapa
-    fecha = models.DateTimeField()
-    local = CountryField()
-    visitante = CountryField()
+    fecha = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text="""Fecha y hora en la que se juega el partido
+        [dd/mm/aaaa hh:mm]""",
+    )
+    local = CountryField(blank=False, null=False)
+    visitante = CountryField(blank=False, null=False)
     # estos campos se definen cuando la etapa esta cerrada
     goles_local = models.PositiveSmallIntegerField(null=True)
     goles_visitante = models.PositiveSmallIntegerField(null=True)

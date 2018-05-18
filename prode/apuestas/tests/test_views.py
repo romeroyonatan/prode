@@ -92,3 +92,85 @@ class EtapaDetailView(TestCase):
         puntajes = self.context['puntajes']
         # verifico ganador
         self.assertEqual(puntajes[0][0], 'user2')
+
+
+class EtapaCreateViewTests(TestCase):
+    def test_context(self):
+        user = self.make_user()
+        with self.login(user):
+            response = self.get('apuestas:create')
+        self.assertIn('partidos_formset', response.context)
+        self.assertIn('form', response.context)
+
+    def test_crear_etapa(self):
+        user = self.make_user()
+        data = {
+            # managenement form
+            'form-TOTAL_FORMS': 1,
+            'form-INITIAL_FORMS': 0,
+            # end managenement form
+            'nombre': 'foo',
+            'slug': 'foo',
+            'vencimiento': '10/07/2018 00:00',
+            'publica': False,
+
+        }
+        with self.login(user):
+            self.post('apuestas:create', data=data)
+        self.assertTrue(
+            models.Etapa.objects.filter(
+                nombre='foo',
+                slug='foo',
+                vencimiento='2018-07-10 00:00-03:00',
+                publica=False
+            ).exists()
+        )
+
+    def test_crear_partidos(self):
+        user = self.make_user()
+        data = {
+            # managenement form
+            'form-TOTAL_FORMS': 1,
+            'form-INITIAL_FORMS': 0,
+            # end managenement form
+            'nombre': 'foo',
+            'slug': 'foo',
+            'vencimiento': '10/07/2018 00:00',
+            'publica': False,
+            # partido
+            'form-0-fecha': '11/07/2018 09:15',
+            'form-0-local': 'AR',
+            'form-0-visitante': 'NG',
+
+        }
+        with self.login(user):
+            self.post('apuestas:create', data=data)
+        self.assertTrue(
+            models.Partido.objects.filter(
+                etapa__nombre='foo',
+                fecha='2018-07-11 09:15-03:00',
+                local='AR',
+                visitante='NG',
+            ).exists()
+        )
+
+    def test_validar_partidos(self):
+        user = self.make_user()
+        data = {
+            # managenement form
+            'form-TOTAL_FORMS': 5,
+            'form-INITIAL_FORMS': 0,
+            # end managenement form
+            'nombre': 'foo',
+            'slug': 'foo',
+            'vencimiento': '10/07/2018 00:00',
+            'publica': False,
+            # partido
+            'form-0-fecha': '11/07/2018 09:15',
+            'form-0-local': 'AR',
+            'form-0-visitante': 'NG',
+
+        }
+        with self.login(user):
+            self.post('apuestas:create', data=data)
+        self.assertEqual(models.Partido.objects.count(), 1)

@@ -10,8 +10,9 @@
       <h2>{{ etapa.nombre }}</h2>
       {% for partido in etapa.partidos.all %}
         <h5>
-          {{ partido.local.unicode_flag }} {{ partido.local.name }} {{ partido.goles_local }} -
-          {{ partido.goles_visitante }} {{ partido.visitante.name }} {{ partido.visitante.unicode_flag }} 
+          {{ partido.local.unicode_flag }} {{ partido.local.name }} {{ partido.goles_local|default_if_none:'' }} -
+          {{ partido.goles_visitante|default_if_none:'' }} {{ partido.visitante.name }} {{ partido.visitante.unicode_flag }} 
+          <small>{{ partido.fecha }}</small>
         </h5>
         <table class="table table-sm table-hover table-striped">
           <caption>Apuestas para {{ partido }}</caption>

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Crear etapa{% endblock %}
+
+{% block content %}
+  <h1>Crear etapa</h1>
+  <form class="form-horizontal" method="post" action=".">
+    {% csrf_token %}
+    {{ form|crispy }}
+
+    <h4>Partidos</h4>
+    {{ partidos_formset.management_form }}
+    <div class="row" id="form_set">
+      {% for partido_form in partidos_formset %}
+        <div class="col-sm-4" style="margin-top: 1rem">
+          <div class="card bg-light">
+            <div class="card-body">
+              <div class="card-text">
+                {{ partido_form|crispy }}
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="button" id="add_more" class="btn btn-primary"/>Agregar nuevo partido</button>
+        <button type="submit" class="btn btn-success">Crear etapa</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}
+
+{% block javascript %}
+  {{ block.super }}
+  <script id="empty_form" type="text/template">
+    <div class="col-sm-4" style="margin-top: 1rem">
+      <div class="card bg-light">
+        <div class="card-body">
+          <div class="card-text">
+            {{ partidos_formset.empty_form|crispy }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+  <script>
+    $('#add_more').click(function(e) {
+      e.preventDefault();
+      var form_idx = $('#id_form-TOTAL_FORMS').val();
+      var new_form = $('#empty_form').html().replace(/__prefix__/g, form_idx);
+      $('#form_set').append(new_form);
+      $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+    });
+  </script>
+{% endblock javascript %}

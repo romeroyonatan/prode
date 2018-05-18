@@ -47,7 +47,7 @@ class ApuestaFormTests(TestCase):
         self.assertEqual(apuesta.goles_visitante, 1)
 
 
-class ApuestaBaseFormSet(TestCase):
+class ApuestaBaseFormSetTests(TestCase):
     def test_init(self):
         user = self.make_user()
         etapa = factories.EtapaFactory.build()
