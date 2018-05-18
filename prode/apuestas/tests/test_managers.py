@@ -9,33 +9,50 @@ from . import factories
 
 
 class ApuestaManagerTests(TestCase):
+    def get_etapa(self):
+        """Obtiene una etapa con 5 partidos con apuestas para probar"""
+        etapa = factories.EtapaFactory()
+        user1 = self.make_user('user1')
+        user2 = self.make_user('user2')
+        user3 = self.make_user('user3')
+        for _ in range(5):
+            partido = factories.PartidoFactory(
+                goles_local=2,
+                goles_visitante=2,
+                etapa=etapa,
+            )
+            # solo acierta goles = 3 puntos
+            factories.ApuestaFactory(
+                ganador=constants.GANA_LOCAL,
+                goles_local=partido.goles_local,
+                goles_visitante=partido.goles_visitante,
+                partido=partido,
+                usuario=user1,
+            )
+            # solo acierta empate y goles = 4 puntos
+            factories.ApuestaFactory(
+                ganador=constants.EMPATE,
+                goles_local=partido.goles_local,
+                goles_visitante=partido.goles_visitante,
+                partido=partido,
+                usuario=user2,
+            )
+            # solo acierta empate = 1 punto
+            factories.ApuestaFactory(
+                ganador=constants.EMPATE,
+                goles_local=1,
+                goles_visitante=2,
+                partido=partido,
+                usuario=user3,
+            )
+        return etapa
+
     def test_get_puntajes(self):
-        partido = factories.PartidoFactory(
-            goles_local=2,
-            goles_visitante=2,
-        )
-        apuesta1 = factories.ApuestaFactory(
-            partido=partido,
-            goles_local=partido.goles_local,
-            goles_visitante=partido.goles_visitante,
-            ganador=constants.GANA_LOCAL,
-        )
-        apuesta2 = factories.ApuestaFactory(
-            partido=partido,
-            goles_local=partido.goles_local,
-            goles_visitante=partido.goles_visitante,
-            ganador=constants.EMPATE,
-        )
-        apuesta3 = factories.ApuestaFactory(
-            partido=partido,
-            goles_local=1,
-            goles_visitante=2,
-            ganador=constants.EMPATE,
-        )
+        etapa = self.get_etapa()
         expected = [
-            (apuesta2.usuario.username, 4),
-            (apuesta1.usuario.username, 3),
-            (apuesta3.usuario.username, 1),
+            ('user2', 20),
+            ('user1', 15),
+            ('user3', 5),
         ]
-        puntajes = models.Apuesta.objects.get_puntajes(etapa=partido.etapa)
+        puntajes = models.Apuesta.objects.get_puntajes(etapa=etapa)
         self.assertEqual(puntajes, expected)
