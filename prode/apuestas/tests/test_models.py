@@ -1,6 +1,9 @@
 from test_plus import TestCase
 
-from prode.apuestas import models
+from prode.apuestas import (
+    constants,
+    models,
+)
 from . import factories
 
 
@@ -13,15 +16,15 @@ class Etapa(TestCase):
 class PartidoTests(TestCase):
     def test_resultado_empate(self):
         partido = factories.PartidoFactory(goles_local=1, goles_visitante=1)
-        self.assertEqual(partido.resultado, models.EMPATE)
+        self.assertEqual(partido.resultado, constants.EMPATE)
 
     def test_resultado_gana_local(self):
         partido = factories.PartidoFactory(goles_local=1, goles_visitante=0)
-        self.assertEqual(partido.resultado, models.GANA_LOCAL)
+        self.assertEqual(partido.resultado, constants.GANA_LOCAL)
 
     def test_resultado_gana_visitante(self):
         partido = factories.PartidoFactory(goles_local=1, goles_visitante=3)
-        self.assertEqual(partido.resultado, models.GANA_VISITANTE)
+        self.assertEqual(partido.resultado, constants.GANA_VISITANTE)
 
     def test_partido_indefindo(self):
         partido = factories.PartidoFactory(goles_local=None,
@@ -40,7 +43,7 @@ class ApuestaTests(TestCase):
         apuesta = factories.ApuestaFactory(partido=partido,
                                            goles_local=1,
                                            goles_visitante=1,
-                                           ganador=models.EMPATE)
+                                           ganador=constants.EMPATE)
         self.assertEqual(apuesta.puntaje, 0)
 
     def test_puntaje_acierta_empate(self):
@@ -48,7 +51,7 @@ class ApuestaTests(TestCase):
         apuesta = factories.ApuestaFactory(partido=partido,
                                            goles_local=1,
                                            goles_visitante=1,
-                                           ganador=models.EMPATE)
+                                           ganador=constants.EMPATE)
         self.assertEqual(apuesta.puntaje, 1)
 
     def test_puntaje_acierta_ganador_local(self):
@@ -56,7 +59,7 @@ class ApuestaTests(TestCase):
         apuesta = factories.ApuestaFactory(partido=partido,
                                            goles_local=1,
                                            goles_visitante=1,
-                                           ganador=models.GANA_LOCAL)
+                                           ganador=constants.GANA_LOCAL)
         self.assertEqual(apuesta.puntaje, 1)
 
     def test_puntaje_acierta_ganador_visitante(self):
@@ -64,7 +67,7 @@ class ApuestaTests(TestCase):
         apuesta = factories.ApuestaFactory(partido=partido,
                                            goles_local=0,
                                            goles_visitante=2,
-                                           ganador=models.GANA_VISITANTE)
+                                           ganador=constants.GANA_VISITANTE)
         self.assertEqual(apuesta.puntaje, 1)
 
     def test_puntaje_acierta_goles(self):
@@ -72,7 +75,7 @@ class ApuestaTests(TestCase):
         apuesta = factories.ApuestaFactory(partido=partido,
                                            goles_local=0,
                                            goles_visitante=1,
-                                           ganador=models.EMPATE)
+                                           ganador=constants.EMPATE)
         self.assertEqual(apuesta.puntaje, 3)
 
     def test_puntaje_acierta_ganador_y_goles(self):
@@ -80,7 +83,7 @@ class ApuestaTests(TestCase):
         apuesta = factories.ApuestaFactory(partido=partido,
                                            goles_local=0,
                                            goles_visitante=1,
-                                           ganador=models.GANA_VISITANTE)
+                                           ganador=constants.GANA_VISITANTE)
         self.assertEqual(apuesta.puntaje, 4)
 
     def test_str(self):

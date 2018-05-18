@@ -1,6 +1,9 @@
 from django import forms
 
-from . import models
+from . import (
+    constants,
+    models,
+)
 
 
 class ApuestaForm(forms.ModelForm):
@@ -24,9 +27,9 @@ class ApuestaForm(forms.ModelForm):
         visitante = self.partido.visitante.name
         # cambio choices del ganador
         self.fields['ganador'].choices = (
-            (models.EMPATE, 'Empate'),
-            (models.GANA_LOCAL, f'Gana {local}'),
-            (models.GANA_VISITANTE, f'Gana {visitante}'),
+            (constants.EMPATE, 'Empate'),
+            (constants.GANA_LOCAL, f'Gana {local}'),
+            (constants.GANA_VISITANTE, f'Gana {visitante}'),
         )
         # cambio labels de goles
         self.fields['goles_local'].label = local

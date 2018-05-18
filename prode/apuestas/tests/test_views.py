@@ -1,6 +1,7 @@
 from test_plus.test import TestCase
 
 from prode.apuestas import (
+    constants,
     forms,
     models,
 )
@@ -43,7 +44,7 @@ class AdministrarApuestasTest(TestCase):
             'form-TOTAL_FORMS': 1,
             'form-INITIAL_FORMS': 0,
             # end managenement form
-            'form-0-ganador': models.GANA_LOCAL,
+            'form-0-ganador': constants.GANA_LOCAL,
             'form-0-goles_local': 1,
             'form-0-goles_visitante': 1,
         }
@@ -56,7 +57,7 @@ class AdministrarApuestasTest(TestCase):
                         .objects
                         .filter(usuario=user,
                                 partido=partido,
-                                ganador=models.GANA_LOCAL,
+                                ganador=constants.GANA_LOCAL,
                                 goles_local=1,
                                 goles_visitante=1)
                         .exists())
