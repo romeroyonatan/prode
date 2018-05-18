@@ -51,3 +51,21 @@ class AdministrarApuestasFormView(mixins.LoginRequiredMixin,
         for _form in formset:
             _form.save()
         return shortcuts.redirect('apuestas:editar', slug=self.object.slug)
+
+
+class EtapaDetailView(mixins.LoginRequiredMixin, generic.DetailView):
+    model = models.Etapa
+
+    def get_context_data(self, **kwargs):
+        """Agrega ganador al contexto."""
+        kwargs['puntajes'] = self.get_puntajes_()
+        return super().get_context_data(**kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.prefetch_related('partidos__apuestas__usuario')
+
+    def get_puntajes_(self):
+        puntajes = models.Apuesta.objects.get_puntajes(etapa=self.object)
+        # obtengo los 5 primeros
+        return puntajes[:5]

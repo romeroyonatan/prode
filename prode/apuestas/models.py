@@ -3,10 +3,10 @@ from django.db import models
 
 from django_countries.fields import CountryField
 
-
-EMPATE = 'E'
-GANA_LOCAL = 'L'
-GANA_VISITANTE = 'V'
+from . import (
+    constants,
+    managers,
+)
 
 
 class Etapa(models.Model):
@@ -43,21 +43,29 @@ class Partido(models.Model):
     goles_local = models.PositiveSmallIntegerField(null=True)
     goles_visitante = models.PositiveSmallIntegerField(null=True)
 
+    def terminado(self):
+        """Se asume partido terminado cuando se cargan los resultados."""
+        return (self.goles_local is not None and
+                self.goles_visitante is not None)
+
     @property
     def resultado(self):
         """Devuelve si gano local, visitante o si fue empate."""
         # no esta definido el resultado del partido
-        if self.goles_local is None or self.goles_visitante is None:
+        if not self.terminado():
             raise ValueError('No está definido el resultado del partido')
         # definir quien gano
         if self.goles_local > self.goles_visitante:
-            return GANA_LOCAL
+            return constants.GANA_LOCAL
         elif self.goles_local < self.goles_visitante:
-            return GANA_VISITANTE
-        return EMPATE
+            return constants.GANA_VISITANTE
+        return constants.EMPATE
 
     def __str__(self):
         return f'{self.local.name} - {self.visitante.name}'
+
+    class Meta:
+        ordering = ('fecha',)
 
 
 class Apuesta(models.Model):
@@ -81,9 +89,9 @@ class Apuesta(models.Model):
     es decir se suma el punto por ganador y los 3 puntos por resultado.
     """
     CHOICE_RESULTADO = (
-        (EMPATE, 'Empate'),
-        (GANA_LOCAL, 'Gana local'),
-        (GANA_VISITANTE, 'Gana visitante'),
+        (constants.EMPATE, 'Empate'),
+        (constants.GANA_LOCAL, 'Gana local'),
+        (constants.GANA_VISITANTE, 'Gana visitante'),
     )
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 related_name='apuestas',
@@ -93,13 +101,23 @@ class Apuesta(models.Model):
                                 on_delete=models.CASCADE)
     ganador = models.CharField(max_length=1,
                                choices=CHOICE_RESULTADO,
-                               default=EMPATE)
+                               default=constants.EMPATE)
     goles_local = models.PositiveSmallIntegerField(default=0)
     goles_visitante = models.PositiveSmallIntegerField(default=0)
+    objects = managers.ApuestaManager()
 
     class Meta:
         # me aseguro que solo exista una apuesta por partido por usuario
         unique_together = ('usuario', 'partido')
+        ordering = ('usuario__username',)
+
+    def get_ganador_display(self):
+        """Obtiene el ganador de forma bonita para mostrar"""
+        if self.ganador == constants.GANA_LOCAL:
+            return self.partido.local.name
+        if self.ganador == constants.GANA_VISITANTE:
+            return self.partido.visitante.name
+        return 'Empate'
 
     @property
     def puntaje(self):
@@ -117,11 +135,11 @@ class Apuesta(models.Model):
         resultado = self.partido.resultado
         # verifico si coincide ganador
         if self.ganador == resultado:
-            puntos += 1
+            puntos += constants.PUNTOS_GANADOR
         # verifico si coincide goles
         if (self.goles_local == goles_local and
                 self.goles_visitante == goles_visitante):
-            puntos += 3
+            puntos += constants.PUNTOS_GOLES
         return puntos
 
     def __str__(self):

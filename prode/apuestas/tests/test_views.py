@@ -1,6 +1,7 @@
 from test_plus.test import TestCase
 
 from prode.apuestas import (
+    constants,
     forms,
     models,
 )
@@ -43,7 +44,7 @@ class AdministrarApuestasTest(TestCase):
             'form-TOTAL_FORMS': 1,
             'form-INITIAL_FORMS': 0,
             # end managenement form
-            'form-0-ganador': models.GANA_LOCAL,
+            'form-0-ganador': constants.GANA_LOCAL,
             'form-0-goles_local': 1,
             'form-0-goles_visitante': 1,
         }
@@ -56,7 +57,38 @@ class AdministrarApuestasTest(TestCase):
                         .objects
                         .filter(usuario=user,
                                 partido=partido,
-                                ganador=models.GANA_LOCAL,
+                                ganador=constants.GANA_LOCAL,
                                 goles_local=1,
                                 goles_visitante=1)
                         .exists())
+
+
+class EtapaDetailView(TestCase):
+    def test_etapa_en_contexto(self):
+        etapa = factories.EtapaFactory()
+        with self.login(self.make_user()):
+            self.get('apuestas:detail', slug=etapa.slug)
+        self.assertContext('etapa', etapa)
+
+    def test_ganador(self):
+        etapa = factories.EtapaFactory()
+        user1 = self.make_user('user1')
+        user2 = self.make_user('user2')
+        for _ in range(40):
+            partido = factories.PartidoFactory(etapa=etapa,
+                                               goles_local=1,
+                                               goles_visitante=2)
+            factories.ApuestaFactory(partido=partido,
+                                     usuario=user1,
+                                     goles_local=1,
+                                     goles_visitante=1)
+            factories.ApuestaFactory(partido=partido,
+                                     usuario=user2,
+                                     goles_local=1,
+                                     goles_visitante=2)
+        with self.login(self.make_user()):
+            self.get('apuestas:detail', slug=etapa.slug)
+        # obtengo puntajes
+        puntajes = self.context['puntajes']
+        # verifico ganador
+        self.assertEqual(puntajes[0][0], 'user2')

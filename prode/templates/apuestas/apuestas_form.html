@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ etapa }}{% endblock %}
+{% block title %}Etapa: {{ etapa.nombre }}{% endblock %}
 
 {% block content %}
   <h1>Apuestas para {{ etapa|upper }}</h1>

@@ -1,8 +1,8 @@
 from test_plus.test import TestCase
 
 from prode.apuestas import (
+    constants,
     forms,
-    models,
 )
 
 from . import factories
@@ -35,14 +35,14 @@ class ApuestaFormTests(TestCase):
             local='AR',
             visitante='BR',
         )
-        data = {'ganador': models.GANA_LOCAL,
+        data = {'ganador': constants.GANA_LOCAL,
                 'goles_local': 2,
                 'goles_visitante': 1}
         form = forms.ApuestaForm(usuario=user, partido=partido, data=data)
         apuesta = form.save()
         self.assertEqual(apuesta.partido, partido)
         self.assertEqual(apuesta.usuario, user)
-        self.assertEqual(apuesta.ganador, models.GANA_LOCAL)
+        self.assertEqual(apuesta.ganador, constants.GANA_LOCAL)
         self.assertEqual(apuesta.goles_local, 2)
         self.assertEqual(apuesta.goles_visitante, 1)
 

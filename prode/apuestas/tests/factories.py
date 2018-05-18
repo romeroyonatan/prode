@@ -3,7 +3,7 @@ import factory.fuzzy
 
 from django.utils import timezone
 
-from prode.apuestas import models
+from prode.apuestas import constants
 from prode.users.tests import factories as user_factories
 
 
@@ -32,9 +32,9 @@ class PartidoFactory(factory.django.DjangoModelFactory):
 class ApuestaFactory(factory.django.DjangoModelFactory):
     usuario = factory.SubFactory(user_factories.UserFactory)
     partido = factory.SubFactory(PartidoFactory)
-    ganador = factory.fuzzy.FuzzyChoice((models.EMPATE,
-                                         models.GANA_LOCAL,
-                                         models.GANA_VISITANTE))
+    ganador = factory.fuzzy.FuzzyChoice((constants.EMPATE,
+                                         constants.GANA_LOCAL,
+                                         constants.GANA_VISITANTE))
     goles_local = factory.Faker('random_digit_not_null')
     goles_visitante = factory.Faker('random_digit_not_null')
 

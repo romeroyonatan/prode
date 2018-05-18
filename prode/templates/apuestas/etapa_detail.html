@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Etapa: {{ etapa.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-9">
+      <h2>{{ etapa.nombre }}</h2>
+      {% for partido in etapa.partidos.all %}
+        <h5>
+          {{ partido.local.unicode_flag }} {{ partido.local.name }} {{ partido.goles_local }} -
+          {{ partido.goles_visitante }} {{ partido.visitante.name }} {{ partido.visitante.unicode_flag }} 
+        </h5>
+        <table class="table table-sm table-hover table-striped">
+          <caption>Apuestas para {{ partido }}</caption>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Ganador</th>
+              <th>{{ partido.local.name }}</th>
+              <th>{{ partido.visitante.name }}</th>
+              {% if partido.terminado %}
+                <th>Puntos</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for apuesta in partido.apuestas.all %}
+              <tr>
+                <td>{{ apuesta.usuario }}</td>
+                <td>{{ apuesta.get_ganador_display }}</td>
+                <td>{{ apuesta.goles_local }}</td>
+                <td>{{ apuesta.goles_visitante }}</td>
+                {% if partido.terminado %}
+                  <th>{{ apuesta.puntaje }}</th>
+                {% endif %}
+                </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endfor %}
+    </div>
+    <div class="col-sm-3">
+      <h2>Mejores puntajes</h2>
+      <table class="table">
+        <caption>5 mejores apostadores</caption>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Puntos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for puntaje in puntajes %}
+            <tr>
+              <td>{{ puntaje.0 }}</td>
+              <td>{{ puntaje.1 }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
