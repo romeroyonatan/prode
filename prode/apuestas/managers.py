@@ -18,6 +18,16 @@ from prode.apuestas.constants import (
 )
 
 
+def por_usuario(item):
+    """Funcion auxiliar para ordenar por usuario."""
+    return item[0]
+
+
+def por_puntaje(item):
+    """Funcion auxiliar para ordenar por puntaje descendente."""
+    return -item[1]
+
+
 class ApuestaManager(Manager):
     def get_puntajes(self, etapa):
         """Obtiene puntajes obtenidos por los usuario en la etapa.
@@ -62,7 +72,7 @@ class ApuestaManager(Manager):
         # obtengo puntajes sumados por usuario
         puntajes_sumados = [
             (user, sum(puntos for _, puntos in group))
-            for user, group in itertools.groupby(queryset, key=lambda x: x[0])
+            for user, group in itertools.groupby(queryset, key=por_usuario)
         ]
         # ordeno por cantidad de puntos descendente
-        return sorted(puntajes_sumados, key=lambda x: -x[1])
+        return sorted(puntajes_sumados, key=por_puntaje)
