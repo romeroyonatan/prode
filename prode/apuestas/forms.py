@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import text
 
 from . import (
     constants,
@@ -79,7 +80,15 @@ class ApuestaBaseFormSet(forms.BaseFormSet):
 class EtapaForm(forms.ModelForm):
     class Meta:
         model = models.Etapa
-        fields = ('publica', 'nombre', 'vencimiento', 'slug')
+        fields = ('publica', 'nombre', 'vencimiento')
+
+    def save(self, commit=True):
+        etapa = super().save(commit=False)
+        if not etapa.slug:
+            etapa.slug = text.slugify(etapa.nombre)
+        if commit:
+            etapa.save()
+        return etapa
 
 
 class PartidoForm(forms.ModelForm):
