@@ -95,3 +95,24 @@ class PartidoForm(forms.ModelForm):
     class Meta:
         model = models.Partido
         fields = ('fecha', 'local', 'visitante')
+
+
+class CargarResultadosForm(forms.ModelForm):
+    class Meta:
+        model = models.Partido
+        fields = ('goles_local', 'goles_visitante')
+
+    def __init__(self, *args, **kwargs):
+        """Llama adaptar_labels"""
+        super().__init__(*args, **kwargs)
+        self.adaptar_labels()
+
+    def adaptar_labels(self):
+        """Adapta los labels a cada equipo que juega el partido.
+
+        En vez de mostrar `local` o `visitante` muestra el nombre del pais
+        """
+        local = self.instance.local.name
+        visitante = self.instance.visitante.name
+        self.fields['goles_local'].label = local
+        self.fields['goles_visitante'].label = visitante

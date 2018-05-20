@@ -1,3 +1,7 @@
+import datetime
+
+from django.utils import timezone
+
 from test_plus.test import TestCase
 
 from prode.apuestas import (
@@ -279,3 +283,70 @@ class EtapaUpdateViewTests(TestCase):
             self.post('apuestas:update', data=data, slug=etapa.slug)
             self.response_302()
         self.assertEqual(models.Partido.objects.count(), 0)
+
+
+class CargarResultadosView(TestCase):
+    def test_get_formset(self):
+        etapa = factories.EtapaFactory()
+        user = self.make_user()
+        with self.login(user):
+            self.get('apuestas:cargar_resultados', slug=etapa.slug)
+        self.assertInContext('formset')
+        self.assertInContext('etapa')
+
+    def test_no_mostrar_partidos_futuros(self):
+        fecha_futura = timezone.now() + datetime.timedelta(days=1)
+        partido_futuro = factories.PartidoFactory(fecha=fecha_futura)
+        etapa = partido_futuro.etapa
+        user = self.make_user()
+        with self.login(user):
+            self.get('apuestas:cargar_resultados', slug=etapa.slug)
+        formset = self.context['formset']
+        self.assertNotIn(partido_futuro, formset.queryset)
+
+    def test_mostrar_partidos_pasados(self):
+        partido_pasado = factories.PartidoFactory(
+            fecha=timezone.now(),
+            goles_local=None,
+            goles_visitante=None,
+        )
+        etapa = partido_pasado.etapa
+        user = self.make_user()
+        with self.login(user):
+            self.get('apuestas:cargar_resultados', slug=etapa.slug)
+        formset = self.context['formset']
+        self.assertIn(partido_pasado, formset.queryset)
+
+    def test_no_mostrar_partidos_con_resultados(self):
+        partido = factories.PartidoFactory(
+            fecha=timezone.now(),
+            goles_local=1,
+            goles_visitante=1,
+        )
+        etapa = partido.etapa
+        user = self.make_user()
+        with self.login(user):
+            self.get('apuestas:cargar_resultados', slug=etapa.slug)
+        formset = self.context['formset']
+        self.assertNotIn(partido, formset.queryset)
+
+    def test_cargar_resultados(self):
+        partido = factories.PartidoFactory(
+            fecha=timezone.now(),
+            goles_local=None,
+            goles_visitante=None,
+        )
+        etapa = partido.etapa
+        user = self.make_user()
+        data = {
+            'partidos-TOTAL_FORMS': 1,
+            'partidos-INITIAL_FORMS': 1,
+            'partidos-0-id': partido.id,
+            'partidos-0-goles_local': 5,
+            'partidos-0-goles_visitante': 3,
+        }
+        with self.login(user):
+            self.post('apuestas:cargar_resultados', data=data, slug=etapa.slug)
+        partido.refresh_from_db()
+        self.assertEqual(partido.goles_local, 5)
+        self.assertEqual(partido.goles_visitante, 3)

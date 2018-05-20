@@ -1,11 +1,15 @@
-from django import shortcuts
-from django.views import generic
+from django import (
+    shortcuts,
+    urls,
+)
 from django.contrib.auth import mixins
 from django.forms import (
     formset_factory,
     modelformset_factory,
     inlineformset_factory,
 )
+from django.utils import timezone
+from django.views import generic
 
 from . import (
     forms,
@@ -147,3 +151,51 @@ class EtapaUpdateView(mixins.LoginRequiredMixin,
         if formset.is_valid():
             formset.save()
         return shortcuts.redirect('apuestas:update', slug=etapa.slug)
+
+
+class CargarResultadosView(generic.edit.SingleObjectMixin, generic.FormView):
+    model = models.Etapa
+    template_name = 'apuestas/cargar_resultados.html'
+    prefix = 'partidos'
+    object = None
+
+    def get_form_class(self):
+        """Obtiene formset para cargar los resultados."""
+        return modelformset_factory(
+            models.Partido,
+            forms.CargarResultadosForm,
+            extra=0,
+        )
+
+    def get_context_data(self, **kwargs):
+        """Agrega etapa y formset al contexto"""
+        self.object = self.get_object()
+        kwargs['etapa'] = self.object
+        kwargs['formset'] = self.get_form()
+        return super().get_context_data(**kwargs)
+
+    def get_form_kwargs(self):
+        """Obtiene los argumentos con los que creara la instancia del formset.
+        """
+        kwargs = super().get_form_kwargs()
+        kwargs['queryset'] = self.get_partidos_queryset()
+        return kwargs
+
+    def get_partidos_queryset(self):
+        """Obtiene el queryset de partidos que van a ser editados.
+
+        Solamente se va a poder cargar los resultados de los partidos pasados
+        que no tengan resultado cargado (es decir que `goles_local` y
+        `goles_visitante` sea None.
+        """
+        etapa = self.get_object()
+        return etapa.partidos.filter(
+            fecha__lt=timezone.now(),
+            goles_local__isnull=True,
+            goles_visitante__isnull=True,
+        )
+
+    def form_valid(self, form):
+        """Guarda formulario y redirije a detalles de la etapa."""
+        form.save()
+        return shortcuts.redirect('apuestas:detail', slug=self.kwargs['slug'])

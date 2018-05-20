@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Etapa: {{ etapa.nombre }}{% endblock %}
+
+{% block content %}
+  <h1>Resultados - {{ etapa|upper }}</h1>
+  <div class="alert alert-warning" role="alert">
+    <strong>Atención</strong> Una vez guardados los resultados no podrá
+    cambiarlos en el futuro.
+  </div>
+  <form class="form-horizontal" method="post" action=".">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <div class="row">
+    {% for form in formset %}
+      <div class="col-sm-4" style="margin-top: 1rem">
+        <div class="card {% cycle 'border-primary' 'border-success' 'border-secondary' 'border-warning' 'border-danger' 'border-info' 'border-dark' %}">
+          <div class="card-body">
+            {% with partido=form.instance %}
+              <h5 class="card-title">
+                {{ partido.local.name }} {{ partido.local.unicode_flag }} -
+                {{ partido.visitante.name }} {{ partido.visitante.unicode_flag }} 
+              </h5>
+              <h6 class="card-subtitle mb-2 text-muted">{{ partido.fecha }}</h6>
+              <p class="card-text">{{ form|crispy }}</p>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-sm-12" style="margin-top: 1rem">
+        <div class="alert alert-primary" role="alert">
+          No hay partidos para cargar resultados. El sistema solo deja cargar
+          resultados a partidos pasados que no tengan resultado cargado.
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-success">Guardar</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}

@@ -110,3 +110,42 @@ class ApuestaBaseFormSetTests(TestCase):
         etapa = partido.etapa
         form = forms.ApuestaBaseFormSet(usuario=user, etapa=etapa)
         self.assertIsNone(form.get_apuesta(partido))
+
+
+class EtapaFormTests(TestCase):
+    def test_save(self):
+        data = {'publica': False,
+                'nombre': 'Octavos de final',
+                'vencimiento': '20/06/2018 00:00'}
+        form = forms.EtapaForm(data=data)
+        etapa = form.save()
+        self.assertFalse(etapa.publica)
+        self.assertEqual(etapa.nombre, 'Octavos de final')
+        self.assertEqual(etapa.vencimiento.strftime('%d/%m/%Y %H:%M'),
+                         '20/06/2018 00:00')
+        self.assertEqual(etapa.slug, 'octavos-de-final')
+
+    def test_save_existente(self):
+        etapa = factories.EtapaFactory()
+        slug = etapa.slug
+        data = {'publica': False,
+                'nombre': 'Octavos de final',
+                'vencimiento': '20/06/2018 00:00'}
+        form = forms.EtapaForm(data=data, instance=etapa)
+        etapa = form.save()
+        self.assertFalse(etapa.publica)
+        self.assertEqual(etapa.nombre, 'Octavos de final')
+        self.assertEqual(etapa.vencimiento.strftime('%d/%m/%Y %H:%M'),
+                         '20/06/2018 00:00')
+        self.assertEqual(etapa.slug, slug)
+
+
+class CargarResultadosFormTests(TestCase):
+    def test_adaptar_labels(self):
+        partido = factories.PartidoFactory.build(
+            local='AR',
+            visitante='BR',
+        )
+        form = forms.CargarResultadosForm(instance=partido)
+        self.assertEqual(form.fields['goles_local'].label, 'Argentina')
+        self.assertEqual(form.fields['goles_visitante'].label, 'Brazil')

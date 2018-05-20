@@ -39,3 +39,15 @@ class ApuestasURLSTests(TestCase):
         self.assertEqual(reverse('apuestas:update',
                                  kwargs={'slug': 'cuartos'}),
                          '/apuestas/etapas/cuartos/editar/')
+
+    def test_resolve_cargar_resultados(self):
+        self.assertEqual(
+            resolve('/apuestas/etapas/cuartos/cargar-resultados/').view_name,
+            'apuestas:cargar_resultados'
+        )
+
+    def test_reverse_cargar_resultados(self):
+        self.assertEqual(
+            reverse('apuestas:cargar_resultados', kwargs={'slug': 'cuartos'}),
+            '/apuestas/etapas/cuartos/cargar-resultados/'
+        )
