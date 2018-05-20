@@ -2,6 +2,7 @@ from django import (
     shortcuts,
     urls,
 )
+from django.contrib import auth
 from django.contrib.auth import mixins
 from django.forms import (
     formset_factory,
@@ -153,11 +154,15 @@ class EtapaUpdateView(mixins.LoginRequiredMixin,
         return shortcuts.redirect('apuestas:update', slug=etapa.slug)
 
 
-class CargarResultadosView(generic.edit.SingleObjectMixin, generic.FormView):
+class CargarResultadosView(mixins.LoginRequiredMixin,
+                           generic.edit.SingleObjectMixin,
+                           generic.FormView):
+    """Permite cargas los resultados de los partidos pasados."""
     model = models.Etapa
     template_name = 'apuestas/cargar_resultados.html'
     prefix = 'partidos'
     object = None
+    # TODO permisos
 
     def get_form_class(self):
         """Obtiene formset para cargar los resultados."""
@@ -199,3 +204,16 @@ class CargarResultadosView(generic.edit.SingleObjectMixin, generic.FormView):
         """Guarda formulario y redirije a detalles de la etapa."""
         form.save()
         return shortcuts.redirect('apuestas:detail', slug=self.kwargs['slug'])
+
+
+class RankingView(generic.ListView):
+    """Permite ver el ranking de mejores apostadores de todas las etapas"""
+    template_name = 'apuestas/ranking.html'
+    context_object_name = 'ranking'
+
+    def get_queryset(self):
+        """Obtiene ranking de mejores apostadores.
+
+        :returns: Lista de tuplas (nombre de usuario, puntaje)
+        """
+        return models.Apuesta.objects.ranking()

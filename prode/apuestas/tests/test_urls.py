@@ -51,3 +51,13 @@ class ApuestasURLSTests(TestCase):
             reverse('apuestas:cargar_resultados', kwargs={'slug': 'cuartos'}),
             '/apuestas/etapas/cuartos/cargar-resultados/'
         )
+
+    def test_resolve_ranking(self):
+        self.assertEqual(
+            resolve('/apuestas/ranking/').view_name, 'apuestas:ranking'
+        )
+
+    def test_reverse_ranking(self):
+        self.assertEqual(
+            reverse('apuestas:ranking'), '/apuestas/ranking/'
+        )

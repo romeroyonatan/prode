@@ -30,3 +30,6 @@ class TestUser(TestCase):
             partido__goles_visitante=None,
         )
         self.assertEqual(self.user.get_puntaje(), 0)
+
+    def test_get_puntaje_sin_apuestas(self):
+        self.assertEqual(self.user.get_puntaje(), 0)

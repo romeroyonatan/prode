@@ -19,4 +19,7 @@ urlpatterns = [
     path('etapas/<slug:slug>/',
          views.EtapaDetailView.as_view(),
          name='detail'),
+    path('ranking/',
+         views.RankingView.as_view(),
+         name='ranking'),
 ]

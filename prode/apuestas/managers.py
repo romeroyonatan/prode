@@ -1,4 +1,5 @@
 import itertools
+from collections import namedtuple
 
 from django.db.models import (
     Case,
@@ -16,6 +17,9 @@ from prode.apuestas.constants import (
     PUNTOS_GANADOR,
     PUNTOS_GOLES,
 )
+
+
+Rank = namedtuple('Rank', 'username puntos')
 
 
 def por_usuario(item):
@@ -40,10 +44,21 @@ class ApuestaManager(Manager):
 
         :returns: Lista de tuplas
         """
-        queryset = (
-            self.get_queryset()
-            .filter(partido__etapa=etapa)
-            .annotate(
+        queryset = self.get_queryset().filter(partido__etapa=etapa)
+        return self.ranking(queryset)
+
+    def ranking(self, queryset=None):
+        """Obtiene puntajes obtenidos por los usuario en todas las etapas.
+
+        Devuelve una lista de tuplas ordenadas de mayor a menor por puntajes.
+        Las tuplas tienen la forma (nombre de usuario, puntos)
+
+        :returns: Lista de tuplas (nombre de usuario, puntos)
+        """
+        if queryset is None:
+            queryset = self.get_queryset()
+        puntajes = (
+            queryset.annotate(
                 # Puntos por ganador
                 puntos_ganador=Case(
                     When(ganador=GANA_LOCAL,
@@ -69,11 +84,12 @@ class ApuestaManager(Manager):
             )
             .annotate(puntos=F('puntos_goles') + F('puntos_ganador'))
             .values_list('usuario__username', 'puntos')
+            .order_by('usuario__username')
         )
         # obtengo puntajes sumados por usuario
         puntajes_sumados = [
-            (user, sum(puntos for _, puntos in group))
-            for user, group in itertools.groupby(queryset, key=por_usuario)
+            Rank(user, sum(puntos for _, puntos in group))
+            for user, group in itertools.groupby(puntajes, key=por_usuario)
         ]
         # ordeno por cantidad de puntos de mayor a menor
         return sorted(puntajes_sumados, key=por_puntaje)
