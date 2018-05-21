@@ -1,3 +1,5 @@
+import datetime
+
 import factory
 import factory.fuzzy
 
@@ -9,7 +11,7 @@ from prode.users.tests import factories as user_factories
 
 class EtapaFactory(factory.django.DjangoModelFactory):
     nombre = factory.Sequence(lambda n: f"etapa-{n}")
-    vencimiento = factory.fuzzy.FuzzyDateTime(timezone.now())
+    vencimiento = timezone.now() + datetime.timedelta(days=1)
     slug = factory.Sequence(lambda n: f"etapa-{n}")
     publica = True
 
@@ -19,7 +21,7 @@ class EtapaFactory(factory.django.DjangoModelFactory):
 
 class PartidoFactory(factory.django.DjangoModelFactory):
     etapa = factory.SubFactory(EtapaFactory)
-    fecha = factory.fuzzy.FuzzyDateTime(timezone.now())
+    fecha = timezone.now() + datetime.timedelta(days=1)
     local = factory.Faker('country_code')
     visitante = factory.Faker('country_code')
     goles_local = factory.Faker('random_digit_not_null')

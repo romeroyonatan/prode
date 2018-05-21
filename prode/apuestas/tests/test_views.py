@@ -66,16 +66,24 @@ class AdministrarApuestasTest(TestCase):
                                 goles_visitante=1)
                         .exists())
 
+    def test_etapa_vencida(self):
+        etapa = factories.EtapaFactory(vencimiento=timezone.now())
+        user = self.make_user()
+        with self.login(user):
+            self.get('apuestas:apostar', slug=etapa.slug)
+            self.response_302()
+        self.assertEqual(self.last_response.url, f"/{etapa.slug}/")
+
 
 class EtapaDetailView(TestCase):
     def test_etapa_en_contexto(self):
-        etapa = factories.EtapaFactory()
+        etapa = factories.EtapaFactory(vencimiento=timezone.now())
         with self.login(self.make_user()):
             self.get('apuestas:detail', slug=etapa.slug)
         self.assertContext('etapa', etapa)
 
     def test_ganador(self):
-        etapa = factories.EtapaFactory()
+        etapa = factories.EtapaFactory(vencimiento=timezone.now())
         user1 = self.make_user('user1')
         user2 = self.make_user('user2')
         for _ in range(40):
@@ -97,17 +105,26 @@ class EtapaDetailView(TestCase):
         # verifico ganador
         self.assertEqual(puntajes[0][0], 'user2')
 
+    def test_etapa_no_vencida(self):
+        fecha_futura = timezone.now() + datetime.timedelta(days=1)
+        etapa = factories.EtapaFactory(vencimiento=fecha_futura)
+        user = self.make_user()
+        with self.login(user):
+            self.get('apuestas:detail', slug=etapa.slug)
+            self.response_302()
+        self.assertEqual(self.last_response.url, f"/{etapa.slug}/apostar/")
+
 
 class EtapaCreateViewTests(TestCase):
     def test_context(self):
-        user = self.make_user()
+        user = self.make_user(perms=('apuestas.add_etapa',))
         with self.login(user):
             response = self.get('apuestas:create')
         self.assertIn('partidos_formset', response.context)
         self.assertIn('form', response.context)
 
     def test_crear_etapa(self):
-        user = self.make_user()
+        user = self.make_user(perms=('apuestas.add_etapa',))
         data = {
             # managenement form
             'partidos-TOTAL_FORMS': 1,
@@ -130,7 +147,7 @@ class EtapaCreateViewTests(TestCase):
         )
 
     def test_crear_partidos(self):
-        user = self.make_user()
+        user = self.make_user(perms=('apuestas.add_etapa',))
         data = {
             # managenement form
             'partidos-TOTAL_FORMS': 1,
@@ -157,7 +174,7 @@ class EtapaCreateViewTests(TestCase):
         )
 
     def test_validar_partidos(self):
-        user = self.make_user()
+        user = self.make_user(perms=('apuestas.add_etapa',))
         data = {
             # managenement form
             'partidos-TOTAL_FORMS': 5,
@@ -176,19 +193,27 @@ class EtapaCreateViewTests(TestCase):
             self.post('apuestas:create', data=data)
         self.assertEqual(models.Partido.objects.count(), 1)
 
+    def test_permisos(self):
+        user = self.make_user()
+        with self.login(user):
+            self.get('apuestas:create')
+            self.response_302()
+            self.post('apuestas:create')
+            self.response_302()
+
 
 class EtapaUpdateViewTests(TestCase):
     def test_context(self):
-        etapa = factories.EtapaFactory()
-        user = self.make_user()
+        etapa = factories.EtapaFactory(publica=False)
+        user = self.make_user(perms=('apuestas.change_etapa',))
         with self.login(user):
             response = self.get('apuestas:update', slug=etapa.slug)
         self.assertIn('partidos_formset', response.context)
         self.assertIn('form', response.context)
 
     def test_update_etapa(self):
-        etapa = factories.EtapaFactory()
-        user = self.make_user()
+        etapa = factories.EtapaFactory(publica=False)
+        user = self.make_user(perms=('apuestas.change_etapa',))
         data = {
             'nombre': 'foo',
             'vencimiento': '10/07/2018 00:00',
@@ -211,8 +236,8 @@ class EtapaUpdateViewTests(TestCase):
         )
 
     def test_crear_partidos(self):
-        etapa = factories.EtapaFactory()
-        user = self.make_user()
+        etapa = factories.EtapaFactory(publica=False)
+        user = self.make_user(perms=('apuestas.change_etapa',))
         data = {
             'nombre': 'foo',
             'vencimiento': '10/07/2018 00:00',
@@ -240,8 +265,8 @@ class EtapaUpdateViewTests(TestCase):
         )
 
     def test_validar_partidos(self):
-        etapa = factories.EtapaFactory()
-        user = self.make_user()
+        etapa = factories.EtapaFactory(publica=False)
+        user = self.make_user(perms=('apuestas.change_etapa',))
         data = {
             'nombre': 'foo',
             'vencimiento': '10/07/2018 00:00',
@@ -260,9 +285,9 @@ class EtapaUpdateViewTests(TestCase):
         self.assertEqual(models.Partido.objects.count(), 1)
 
     def test_eliminar_partidos(self):
-        etapa = factories.EtapaFactory()
+        etapa = factories.EtapaFactory(publica=False)
         partido = factories.PartidoFactory(etapa=etapa)
-        user = self.make_user()
+        user = self.make_user(perms=('apuestas.change_etapa',))
         data = {
             'nombre': 'foo',
             'vencimiento': '10/07/2018 00:00',
@@ -284,11 +309,34 @@ class EtapaUpdateViewTests(TestCase):
             self.response_302()
         self.assertEqual(models.Partido.objects.count(), 0)
 
+    def test_permisos(self):
+        user = self.make_user()
+        etapa = factories.EtapaFactory(publica=False)
+        with self.login(user):
+            self.get('apuestas:update', slug=etapa.slug)
+            self.response_302()
+            self.post('apuestas:update', slug=etapa.slug)
+            self.response_302()
+
+    def test_editar_etapa_publica(self):
+        """Para editar etapa publica, requiere ser administrador"""
+        user = self.make_user()
+        admin = self.make_user('admin')
+        admin.is_superuser = True
+        admin.save()
+        etapa = factories.EtapaFactory(publica=True)
+        with self.login(user):
+            self.get('apuestas:update', slug=etapa.slug)
+            self.response_302()
+        with self.login(admin):
+            self.get('apuestas:update', slug=etapa.slug)
+            self.response_200()
+
 
 class CargarResultadosView(TestCase):
     def test_get_formset(self):
         etapa = factories.EtapaFactory()
-        user = self.make_user()
+        user = self.make_user(perms=('apuestas.change_etapa',))
         with self.login(user):
             self.get('apuestas:cargar_resultados', slug=etapa.slug)
         self.assertInContext('formset')
@@ -298,7 +346,7 @@ class CargarResultadosView(TestCase):
         fecha_futura = timezone.now() + datetime.timedelta(days=1)
         partido_futuro = factories.PartidoFactory(fecha=fecha_futura)
         etapa = partido_futuro.etapa
-        user = self.make_user()
+        user = self.make_user(perms=('apuestas.change_etapa',))
         with self.login(user):
             self.get('apuestas:cargar_resultados', slug=etapa.slug)
         formset = self.context['formset']
@@ -311,7 +359,7 @@ class CargarResultadosView(TestCase):
             goles_visitante=None,
         )
         etapa = partido_pasado.etapa
-        user = self.make_user()
+        user = self.make_user(perms=('apuestas.change_etapa',))
         with self.login(user):
             self.get('apuestas:cargar_resultados', slug=etapa.slug)
         formset = self.context['formset']
@@ -324,7 +372,7 @@ class CargarResultadosView(TestCase):
             goles_visitante=1,
         )
         etapa = partido.etapa
-        user = self.make_user()
+        user = self.make_user(perms=('apuestas.change_etapa',))
         with self.login(user):
             self.get('apuestas:cargar_resultados', slug=etapa.slug)
         formset = self.context['formset']
@@ -337,7 +385,7 @@ class CargarResultadosView(TestCase):
             goles_visitante=None,
         )
         etapa = partido.etapa
-        user = self.make_user()
+        user = self.make_user(perms=('apuestas.change_etapa',))
         data = {
             'partidos-TOTAL_FORMS': 1,
             'partidos-INITIAL_FORMS': 1,
@@ -350,6 +398,15 @@ class CargarResultadosView(TestCase):
         partido.refresh_from_db()
         self.assertEqual(partido.goles_local, 5)
         self.assertEqual(partido.goles_visitante, 3)
+
+    def test_permisos(self):
+        user = self.make_user()
+        etapa = factories.EtapaFactory()
+        with self.login(user):
+            self.get('apuestas:cargar_resultados', slug=etapa.slug)
+            self.response_302()
+            self.post('apuestas:cargar_resultados', slug=etapa.slug)
+            self.response_302()
 
 
 class RankingViewTests(TestCase):

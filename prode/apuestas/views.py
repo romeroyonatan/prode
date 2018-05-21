@@ -1,11 +1,7 @@
 import itertools
 import functools
 
-from django import (
-    shortcuts,
-    urls,
-)
-from django.contrib import auth
+from django import shortcuts
 from django.contrib.auth import mixins
 from django.forms import (
     formset_factory,
@@ -32,6 +28,15 @@ class AdministrarApuestasFormView(mixins.LoginRequiredMixin,
     template_name = 'apuestas/apuestas_form.html'
     model = models.Etapa
     object = None
+
+    def dispatch(self, *args, **kwargs):
+        """Si la etapa esta vencida, no se puede apostar mas. Redirige al
+        detalle de la etapa.
+        """
+        etapa = self.get_object()
+        if etapa.vencida:
+            return shortcuts.redirect(etapa)
+        return super().dispatch(*args, **kwargs)
 
     def get_form_class(self):
         """Obtiene la clase del formulario a traves del factory de formset."""
@@ -66,7 +71,23 @@ class AdministrarApuestasFormView(mixins.LoginRequiredMixin,
 
 
 class EtapaDetailView(mixins.LoginRequiredMixin, generic.DetailView):
+    """Permite ver todas las apuestas de todos los partidos de la etapa.
+
+    Ademas muestra los mejores 5 apostadores de la etapa con su puntaje
+
+    Solo se permite ver los detalles de la etapa cuando la etapa este
+    vencida.
+    """
     model = models.Etapa
+
+    def dispatch(self, *args, **kwargs):
+        """Si la etapa no esta vencida, no se puede ver las apuestas de otros
+        apostadores. Redirige a la pantalla de apostar.
+        """
+        etapa = self.get_object()
+        if not etapa.vencida:
+            return shortcuts.redirect('apuestas:apostar', slug=etapa.slug)
+        return super().dispatch(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         """Agrega ganador al contexto."""
@@ -83,12 +104,15 @@ class EtapaDetailView(mixins.LoginRequiredMixin, generic.DetailView):
         return puntajes[:5]
 
 
-class EtapaCreateView(mixins.LoginRequiredMixin,
+class EtapaCreateView(mixins.PermissionRequiredMixin,
                       generic.CreateView):
-    """Permite crear una etapa nueva"""
+    """Permite crear una etapa nueva.
+
+    Requiere permisos ``apuestas.add_etapa``.
+    """
     model = models.Etapa
     form_class = forms.EtapaForm
-    # TODO permisos
+    permission_required = 'apuestas.add_etapa'
 
     def get_context_data(self, **kwargs):
         """Agrega formset al contexto."""
@@ -107,26 +131,32 @@ class EtapaCreateView(mixins.LoginRequiredMixin,
     def form_valid(self, form):
         """Guarda etapa y los partidos asociados."""
         etapa = form.save()
-        print(vars(etapa))
         formset = self.get_partidos_formset()
         if formset.is_valid():
-            self.guardar_partidos(formset, etapa)
+            partidos = formset.save(commit=False)
+            for partido in partidos:
+                partido.etapa = etapa
+                partido.save()
         return shortcuts.redirect('apuestas:update', slug=etapa.slug)
 
-    def guardar_partidos(self, formset, etapa):
-        """Guarda el formulario de partido"""
-        partidos = formset.save(commit=False)
-        for partido in partidos:
-            partido.etapa = etapa
-            partido.save()
 
-
-class EtapaUpdateView(mixins.LoginRequiredMixin,
+class EtapaUpdateView(mixins.UserPassesTestMixin,
                       generic.UpdateView):
-    """Permite editar una etapa"""
+    """Permite editar una etapa.
+
+    Se pueden editar etapas que no sean publicas con el permiso
+    ``apuestas.change_etapa``. Si la etapa es publica, solo un
+    superadministrador puede cambiarla.
+    """
     model = models.Etapa
     form_class = forms.EtapaForm
-    # TODO permisos
+
+    def test_func(self):
+        """Si la etapa es publica, solo un administrador puede editarla"""
+        etapa = self.get_object()
+        if etapa.publica:
+            return self.request.user.is_superuser
+        return self.request.user.has_perm('apuestas.change_etapa')
 
     def get_context_data(self, **kwargs):
         """Agrega formset al contexto."""
@@ -157,15 +187,18 @@ class EtapaUpdateView(mixins.LoginRequiredMixin,
         return shortcuts.redirect('apuestas:update', slug=etapa.slug)
 
 
-class CargarResultadosView(mixins.LoginRequiredMixin,
+class CargarResultadosView(mixins.PermissionRequiredMixin,
                            generic.edit.SingleObjectMixin,
                            generic.FormView):
-    """Permite cargas los resultados de los partidos pasados."""
+    """Permite cargas los resultados de los partidos pasados.
+
+    Requiere permisos ``apuestas.change_etapa``
+    """
     model = models.Etapa
     template_name = 'apuestas/cargar_resultados.html'
     prefix = 'partidos'
     object = None
-    # TODO permisos
+    permission_required = 'apuestas.change_etapa'
 
     def get_form_class(self):
         """Obtiene formset para cargar los resultados."""
