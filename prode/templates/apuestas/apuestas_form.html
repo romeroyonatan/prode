@@ -4,6 +4,9 @@
 {% block title %}Etapa: {{ etapa.nombre }}{% endblock %}
 
 {% block content %}
+  {% if request.user.is_superuser %}
+    <a href="{% url 'apuestas:update' etapa.slug %}" class="btn btn-outline-warning">Editar</a>
+  {% endif %}
   <h1>Apuestas para {{ etapa|upper }}</h1>
   <p>Tiempo restante para apostar: <strong title="{{ etapa.vencimiento }}">{{ etapa.vencimiento|timeuntil }}</strong></p>
   <form class="form-horizontal" method="post" action=".">

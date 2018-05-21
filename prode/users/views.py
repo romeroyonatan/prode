@@ -58,7 +58,14 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
     permanent = False
 
     def get_redirect_url(self):
-        return '/'
+        """ Redirige a la ultima etapa publica, si es que hay alguna, sino al
+        perfil.
+        """
+        try:
+            etapa = apuestas_models.Etapa.objects.filter(publica=True).latest()
+            return etapa.get_absolute_url()
+        except apuestas_models.Etapa.DoesNotExist:
+            return self.request.user.get_absolute_url()
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):

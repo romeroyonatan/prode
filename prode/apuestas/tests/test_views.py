@@ -408,6 +408,20 @@ class CargarResultadosView(TestCase):
             self.post('apuestas:cargar_resultados', slug=etapa.slug)
             self.response_302()
 
+    def test_mostrar_partidos_con_resultados_solo_admin(self):
+        partido = factories.PartidoFactory(
+            fecha=timezone.now(),
+            goles_local=1,
+            goles_visitante=1,
+        )
+        etapa = partido.etapa
+        user = self.make_user()
+        user.is_superuser = True
+        user.save()
+        with self.login(user):
+            self.get('apuestas:cargar_resultados', slug=etapa.slug)
+        formset = self.context['formset']
+        self.assertIn(partido, formset.queryset)
 
 class RankingViewTests(TestCase):
     def hacer_apuestas(self):

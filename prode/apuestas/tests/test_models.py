@@ -7,22 +7,27 @@ from prode.apuestas import constants
 from . import factories
 
 
-class Etapa(TestCase):
+class EtapaTests(TestCase):
     def test_str(self):
         etapa = factories.EtapaFactory.build(nombre='Octavos de final')
         self.assertEqual(str(etapa), 'Octavos de final')
 
-    def get_absolute_url__etapa_vencida(self):
+    def test_get_absolute_url__etapa_vencida(self):
         etapa = factories.EtapaFactory.build(slug='foo',
                                              vencimiento=timezone.now())
-        expected = '/apuestas/etapa/foo/'
+        expected = '/foo/'
         self.assertEqual(etapa.get_absolute_url(), expected)
 
-    def get_absolute_url__etapa_no_vencida(self):
+    def test_get_absolute_url__etapa_no_vencida(self):
         fecha_futura = timezone.now() + datetime.timedelta(days=1)
         etapa = factories.EtapaFactory.build(slug='foo',
                                              vencimiento=fecha_futura)
-        expected = '/apuestas/etapa/foo/apostar/'
+        expected = '/foo/apostar/'
+        self.assertEqual(etapa.get_absolute_url(), expected)
+
+    def test_get_absolute_url__no_publica(self):
+        etapa = factories.EtapaFactory.build(slug='foo', publica=False)
+        expected = '/foo/editar/'
         self.assertEqual(etapa.get_absolute_url(), expected)
 
     def test_vencida(self):
@@ -54,7 +59,7 @@ class PartidoTests(TestCase):
         partido = factories.PartidoFactory(goles_local=None,
                                            goles_visitante=None)
         with self.assertRaises(ValueError):
-            partido.resultado
+            self.assertFalse(partido.resultado)
 
     def test_str(self):
         partido = factories.PartidoFactory.build(local='AR',

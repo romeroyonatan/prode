@@ -37,10 +37,24 @@ class Etapa(models.Model):
     Tildar cuando la etapa este lista para ser mostrada a los apostadores para
     que empiecen a apostar""")
 
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        get_latest_by = 'created'
+        ordering = ('created',)
+
     def __str__(self):
         return f'{self.nombre}'
 
     def get_absolute_url(self):
+        """Devuelve url de la etapa:
+
+        Si esta vencida, muestra todas las apuestas de la etapa
+        Si no es publica, muestra el formulario de edicion
+        Si no esta vencida, muestra el formulario de apostar.
+        """
+        if not self.publica:
+            return urls.reverse('apuestas:update', kwargs={'slug': self.slug})
         if self.vencida:
             return urls.reverse('apuestas:detail', kwargs={'slug': self.slug})
         return urls.reverse('apuestas:apostar', kwargs={'slug': self.slug})

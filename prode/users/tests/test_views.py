@@ -31,7 +31,19 @@ class TestUserRedirectView(BaseUserTestCase):
         view.request = request
         # Expect: '/usuarios/testuser/', as that is the default username for
         #   self.make_user()
-        self.assertEqual(view.get_redirect_url(), "/")
+        self.assertEqual(view.get_redirect_url(), '/usuarios/testuser/')
+
+    def test_get_redirect_url__etapa_publica(self):
+        etapa = factories.EtapaFactory(publica=True, slug='foo')
+        # Instantiate the view directly. Never do this outside a test!
+        view = UserRedirectView()
+        # Generate a fake request
+        request = self.factory.get("/fake-url")
+        # Attach the user to the request
+        request.user = self.user
+        # Attach the request to the view
+        view.request = request
+        self.assertEqual(view.get_redirect_url(), '/foo/apostar/')
 
 
 class TestUserUpdateView(BaseUserTestCase):

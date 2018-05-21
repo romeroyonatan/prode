@@ -2,6 +2,7 @@ import itertools
 import functools
 
 from django import shortcuts
+from django.contrib import messages
 from django.contrib.auth import mixins
 from django.forms import (
     formset_factory,
@@ -67,6 +68,9 @@ class AdministrarApuestasFormView(mixins.LoginRequiredMixin,
         formset = form
         for _form in formset:
             _form.save()
+        messages.success(self.request, '''La apuesta fue guardada con éxito,
+                         puede seguir editandola hasta que se acabe el tiempo
+                         para apostar''')
         return shortcuts.redirect('apuestas:apostar', slug=self.object.slug)
 
 
@@ -121,12 +125,15 @@ class EtapaCreateView(mixins.PermissionRequiredMixin,
 
     def get_partidos_formset(self):
         """Obtiene formset para crear partidos"""
+        queryset = models.Partido.objects.none()
         PartidoFormset = modelformset_factory(models.Partido,
                                               forms.PartidoForm,
                                               extra=3)
         if self.request.method == 'POST':
-            return PartidoFormset(self.request.POST, prefix='partidos')
-        return PartidoFormset(prefix='partidos')
+            return PartidoFormset(self.request.POST,
+                                  prefix='partidos',
+                                  queryset=queryset)
+        return PartidoFormset(prefix='partidos', queryset=queryset)
 
     def form_valid(self, form):
         """Guarda etapa y los partidos asociados."""
@@ -137,6 +144,9 @@ class EtapaCreateView(mixins.PermissionRequiredMixin,
             for partido in partidos:
                 partido.etapa = etapa
                 partido.save()
+        messages.success(self.request, '''La etapa fue guardada con éxito.
+                         Podrá seguir editando la etapa hasta que la misma sea
+                         marcada como pública''')
         return shortcuts.redirect('apuestas:update', slug=etapa.slug)
 
 
@@ -184,6 +194,9 @@ class EtapaUpdateView(mixins.UserPassesTestMixin,
         formset = self.get_partidos_formset()
         if formset.is_valid():
             formset.save()
+        messages.success(self.request, '''La etapa fue guardada con éxito.
+                         Podrá seguir editando la etapa hasta que la misma sea
+                         marcada como pública''')
         return shortcuts.redirect('apuestas:update', slug=etapa.slug)
 
 
@@ -193,6 +206,9 @@ class CargarResultadosView(mixins.PermissionRequiredMixin,
     """Permite cargas los resultados de los partidos pasados.
 
     Requiere permisos ``apuestas.change_etapa``
+
+    No permite editar los resultados de partidos pasados, excepto para el admin
+    en caso de correcciones
     """
     model = models.Etapa
     template_name = 'apuestas/cargar_resultados.html'
@@ -230,6 +246,9 @@ class CargarResultadosView(mixins.PermissionRequiredMixin,
         `goles_visitante` sea None.
         """
         etapa = self.get_object()
+        # El admin puede editar resultados de partidos pasados
+        if self.request.user.is_superuser:
+            return etapa.partidos.filter(fecha__lt=timezone.now())
         return etapa.partidos.filter(
             fecha__lt=timezone.now(),
             goles_local__isnull=True,
@@ -239,6 +258,8 @@ class CargarResultadosView(mixins.PermissionRequiredMixin,
     def form_valid(self, form):
         """Guarda formulario y redirije a detalles de la etapa."""
         form.save()
+        messages.success(self.request, '''Los resultados se han guardado. No
+                         podrá editarlos en el futuro''')
         return shortcuts.redirect('apuestas:detail', slug=self.kwargs['slug'])
 
 

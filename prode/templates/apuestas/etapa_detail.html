@@ -5,6 +5,9 @@
 
 {% block content %}
 <div class="container">
+  {% if perms.apuestas.change_etapa %}
+    <a href="{% url 'apuestas:cargar_resultados' etapa.slug %}" class="btn btn-outline-primary">Cargar resultados</a>
+  {% endif %}
   <div class="row">
     <div class="col-sm-9">
       <h2>{{ etapa.nombre }}</h2>
