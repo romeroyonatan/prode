@@ -9,12 +9,14 @@
     <div class="col-sm-12">
       <h1>Ranking mejores apostadores</h1>
 
+      {% if puesto_actual %}
       <div class="alert alert-info">
         Estás en el <a href="#{{ request.user.username }}">{{ puesto_actual|ordinal }} puesto</a>
         {% if puesto_actual == 1 %}
           <strong>Felicitaciones</strong>
         {% endif %}
       </div>
+      {% endif %}
 
       <table class="table table-hover">
         <caption>Mejores apostadores</caption>
