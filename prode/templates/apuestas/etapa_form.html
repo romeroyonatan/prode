@@ -35,7 +35,6 @@
 
 {% block javascript %}
   {{ block.super }}
-  {% compress js %}
   <script id="empty_form" type="text/template">
     <div class="col-sm-4" style="margin-top: 1rem">
       <div class="card bg-light">
@@ -56,5 +55,4 @@
       $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
     });
   </script>
-  {% endcompress %}
 {% endblock javascript %}
