@@ -14,6 +14,7 @@
           {{ partido.goles_visitante|default_if_none:'' }} {{ partido.visitante.name }} {{ partido.visitante.unicode_flag }} 
           <small>{{ partido.fecha }}</small>
         </h5>
+
         <table class="table table-sm table-hover table-striped">
           <caption>Apuestas para {{ partido }}</caption>
           <thead>
@@ -54,10 +55,10 @@
           </tr>
         </thead>
         <tbody>
-          {% for puntaje in puntajes %}
+          {% for usuario, puntos in puntajes %}
             <tr>
-              <td>{{ puntaje.0 }}</td>
-              <td>{{ puntaje.1 }}</td>
+              <td>{{ usuario }}</td>
+              <td>{{ puntos }}</td>
             </tr>
           {% endfor %}
         </tbody>
@@ -66,4 +67,3 @@
   </div>
 </div>
 {% endblock content %}
-
