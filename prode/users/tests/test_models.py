@@ -20,7 +20,7 @@ class TestUser(TestCase):
     def test_get_puntaje(self):
         apuestas = factories.ApuestaFactory.create_batch(10, usuario=self.user)
         puntaje = sum(apuesta.puntaje for apuesta in apuestas)
-        self.assertEqual(self.user.get_puntaje(), puntaje)
+        self.assertEqual(self.user.puntaje, puntaje)
 
     def test_get_puntaje_partidos_sin_definir(self):
         factories.ApuestaFactory.create_batch(
@@ -29,7 +29,7 @@ class TestUser(TestCase):
             partido__goles_local=None,
             partido__goles_visitante=None,
         )
-        self.assertEqual(self.user.get_puntaje(), 0)
+        self.assertEqual(self.user.puntaje, 0)
 
     def test_get_puntaje_sin_apuestas(self):
-        self.assertEqual(self.user.get_puntaje(), 0)
+        self.assertEqual(self.user.puntaje, 0)

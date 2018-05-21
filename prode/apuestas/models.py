@@ -1,5 +1,7 @@
+from django import urls
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from django_countries.fields import CountryField
 
@@ -37,6 +39,16 @@ class Etapa(models.Model):
 
     def __str__(self):
         return f'{self.nombre}'
+
+    def get_absolute_url(self):
+        if self.vencida:
+            return urls.reverse('apuestas:detail', kwargs={'slug': self.slug})
+        return urls.reverse('apuestas:apostar', kwargs={'slug': self.slug})
+
+    @property
+    def vencida(self):
+        """Devuelve verdadero si la etapa esta vencida"""
+        return timezone.now() > self.vencimiento
 
 
 class Partido(models.Model):
@@ -77,6 +89,9 @@ class Partido(models.Model):
         return constants.EMPATE
 
     def __str__(self):
+        if self.terminado():
+            return (f'{self.local.name} {self.goles_local} - '
+                    f'{self.goles_visitante} {self.visitante.name}')
         return f'{self.local.name} - {self.visitante.name}'
 
     class Meta:

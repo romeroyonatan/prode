@@ -245,8 +245,4 @@ class RankingView(mixins.LoginRequiredMixin, generic.ListView):
 
         :returns: Numero de puesto del usuario o None si no se encontro
         """
-        ranking = self.get_queryset()
-        for puesto, (username, _) in enumerate(ranking):
-            if username == self.request.user.username:
-                return puesto
-        return None
+        return self.request.user.ranking

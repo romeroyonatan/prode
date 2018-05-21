@@ -10,8 +10,8 @@
       <h1>Ranking mejores apostadores</h1>
 
       <div class="alert alert-info">
-        Estás en el <a href="#{{ request.user.username }}">{{ puesto_actual|add:1|ordinal }} puesto</a>
-        {% if puesto_actual == 0 %}
+        Estás en el <a href="#{{ request.user.username }}">{{ puesto_actual|ordinal }} puesto</a>
+        {% if puesto_actual == 1 %}
           <strong>Felicitaciones</strong>
         {% endif %}
       </div>
