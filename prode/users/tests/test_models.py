@@ -15,7 +15,7 @@ class TestUser(TestCase):
         )
 
     def test_get_absolute_url(self):
-        self.assertEqual(self.user.get_absolute_url(), "/users/testuser/")
+        self.assertEqual(self.user.get_absolute_url(), "/usuarios/testuser/")
 
     def test_get_puntaje(self):
         apuestas = factories.ApuestaFactory.create_batch(10, usuario=self.user)

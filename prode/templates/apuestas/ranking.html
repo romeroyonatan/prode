@@ -28,7 +28,7 @@
         <tbody>
           {% for usuario, puntos in ranking %}
           <tr {% if usuario in ganadores %}class="table-success"
-              {% elif forloop.counter0 == puesto_actual%}class="table-active"
+              {% elif forloop.counter == puesto_actual%}class="table-active"
               {% endif %}>
               <th>{% if usuario in ganadores %} 1  {# En caso de muchos ganadores, siempre muestro numero 1 #}
                   {% else %}{{ forloop.counter }}
