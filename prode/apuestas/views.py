@@ -1,3 +1,6 @@
+import itertools
+import functools
+
 from django import (
     shortcuts,
     urls,
@@ -206,14 +209,44 @@ class CargarResultadosView(mixins.LoginRequiredMixin,
         return shortcuts.redirect('apuestas:detail', slug=self.kwargs['slug'])
 
 
-class RankingView(generic.ListView):
+class RankingView(mixins.LoginRequiredMixin, generic.ListView):
     """Permite ver el ranking de mejores apostadores de todas las etapas"""
     template_name = 'apuestas/ranking.html'
     context_object_name = 'ranking'
 
+    @functools.lru_cache()
     def get_queryset(self):
         """Obtiene ranking de mejores apostadores.
 
         :returns: Lista de tuplas (nombre de usuario, puntaje)
         """
         return models.Apuesta.objects.ranking()
+
+    def get_context_data(self, **kwargs):
+        kwargs['ganadores'] = self.get_ganadores()
+        kwargs['puesto_actual'] = self.get_puesto_actual()
+        return super().get_context_data(**kwargs)
+
+    def get_ganadores(self):
+        """Obtiene una tupla con los nombres de usuario de ganadores.
+
+        En caso que no haya apuestas, devuelve una tupla vacia
+        """
+        ranking = self.get_queryset()
+        if not ranking:
+            return tuple()
+        mayor_puntaje = ranking[0].puntos
+        ganadores = itertools.takewhile(lambda x: x.puntos == mayor_puntaje,
+                                        ranking)
+        return tuple(ganador.username for ganador in ganadores)
+
+    def get_puesto_actual(self):
+        """Obtiene el puesto actual del usuario en sesion
+
+        :returns: Numero de puesto del usuario o None si no se encontro
+        """
+        ranking = self.get_queryset()
+        for puesto, (username, _) in enumerate(ranking):
+            if username == self.request.user.username:
+                return puesto
+        return None

@@ -377,6 +377,21 @@ class RankingViewTests(TestCase):
                                      goles_visitante=1,
                                      ganador=constants.GANA_LOCAL)
 
+    def hacer_apuestas_empate(self):
+        self.user1 = self.make_user('user1')
+        self.user2 = self.make_user('user2')
+        self.user3 = self.make_user('user3')
+        partidos = factories.PartidoFactory.create_batch(10,
+                                                         goles_local=1,
+                                                         goles_visitante=0)
+        for partido in partidos:
+            for user in (self.user1, self.user2, self.user3):
+                factories.ApuestaFactory(usuario=user,
+                                         partido=partido,
+                                         goles_local=1,
+                                         goles_visitante=0,
+                                         ganador=constants.GANA_LOCAL)
+
     def test_ranking(self):
         self.hacer_apuestas()
         with self.login(self.user1):
@@ -389,9 +404,54 @@ class RankingViewTests(TestCase):
         ]
         self.assertEqual(ranking, expected)
 
+    def test_ganador(self):
+        self.hacer_apuestas()
+        with self.login(self.user1):
+            self.get('apuestas:ranking')
+        ganador = self.context['ganadores'][0]
+        self.assertEqual(ganador, 'user2')
+
     def test_ranking_sin_apuestas(self):
         user = self.make_user()
         with self.login(user):
             self.get('apuestas:ranking')
         ranking = self.context['ranking']
         self.assertEqual(len(ranking), 0)
+
+    def test_ranking__sin_partidos_definidos(self):
+        user = self.make_user()
+        factories.ApuestaFactory(partido__goles_local=None,
+                                 partido__goles_visitante=None,
+                                 usuario=user)
+        with self.login(user):
+            self.get('apuestas:ranking')
+        ranking = self.context['ranking']
+        expected = [
+            (user.username, 0),
+        ]
+        self.assertEqual(ranking, expected)
+
+    def test_ganadores(self):
+        self.hacer_apuestas_empate()
+        with self.login(self.user1):
+            self.get('apuestas:ranking')
+        ganadores = self.context['ganadores']
+        expected = ('user1', 'user2', 'user3')
+        self.assertEqual(ganadores, expected)
+
+    def test_ganadores__sin_apuestas(self):
+        user = self.make_user()
+        with self.login(user):
+            self.get('apuestas:ranking')
+        ganadores = list(self.context['ganadores'])
+        self.assertEqual(ganadores, [])
+
+    def test_ganadores__sin_partidos_definidos(self):
+        user = self.make_user()
+        factories.ApuestaFactory(partido__goles_local=None,
+                                 partido__goles_visitante=None,
+                                 usuario=user)
+        with self.login(user):
+            self.get('apuestas:ranking')
+        ganador = self.context['ganadores'][0]
+        self.assertEqual(ganador, user.username)
