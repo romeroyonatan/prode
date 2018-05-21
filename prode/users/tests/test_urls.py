@@ -10,35 +10,35 @@ class TestUserURLs(TestCase):
         self.user = self.make_user()
 
     def test_list_reverse(self):
-        """users:list should reverse to /users/."""
-        self.assertEqual(reverse("users:list"), "/users/")
+        """users:list should reverse to /usuarios/."""
+        self.assertEqual(reverse("users:list"), "/usuarios/")
 
     def test_list_resolve(self):
-        """/users/ should resolve to users:list."""
-        self.assertEqual(resolve("/users/").view_name, "users:list")
+        """/usuarios/ should resolve to users:list."""
+        self.assertEqual(resolve("/usuarios/").view_name, "users:list")
 
     def test_redirect_reverse(self):
-        """users:redirect should reverse to /users/~redirect/."""
-        self.assertEqual(reverse("users:redirect"), "/users/~redirect/")
+        """users:redirect should reverse to /usuarios/~redirect/."""
+        self.assertEqual(reverse("users:redirect"), "/usuarios/~redirect/")
 
     def test_redirect_resolve(self):
-        """/users/~redirect/ should resolve to users:redirect."""
-        self.assertEqual(resolve("/users/~redirect/").view_name, "users:redirect")
+        """/usuarios/~redirect/ should resolve to users:redirect."""
+        self.assertEqual(resolve("/usuarios/~redirect/").view_name, "users:redirect")
 
     def test_detail_reverse(self):
-        """users:detail should reverse to /users/testuser/."""
+        """users:detail should reverse to /usuarios/testuser/."""
         self.assertEqual(
-            reverse("users:detail", kwargs={"username": "testuser"}), "/users/testuser/"
+            reverse("users:detail", kwargs={"username": "testuser"}), "/usuarios/testuser/"
         )
 
     def test_detail_resolve(self):
-        """/users/testuser/ should resolve to users:detail."""
-        self.assertEqual(resolve("/users/testuser/").view_name, "users:detail")
+        """/usuarios/testuser/ should resolve to users:detail."""
+        self.assertEqual(resolve("/usuarios/testuser/").view_name, "users:detail")
 
     def test_update_reverse(self):
-        """users:update should reverse to /users/~update/."""
-        self.assertEqual(reverse("users:update"), "/users/~update/")
+        """users:update should reverse to /usuarios/~update/."""
+        self.assertEqual(reverse("users:update"), "/usuarios/~update/")
 
     def test_update_resolve(self):
-        """/users/~update/ should resolve to users:update."""
-        self.assertEqual(resolve("/users/~update/").view_name, "users:update")
+        """/usuarios/~update/ should resolve to users:update."""
+        self.assertEqual(resolve("/usuarios/~update/").view_name, "users:update")

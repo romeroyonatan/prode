@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Etapa: {{ etapa.nombre }}{% endblock %}
+
+{% block content %}
+  {% if request.user.is_superuser %}
+    <a href="{% url 'apuestas:update' etapa.slug %}" class="btn btn-outline-warning">Editar</a>
+  {% endif %}
+  <h1>Apuestas para {{ etapa|upper }}</h1>
+  <p>Tiempo restante para apostar: <strong title="{{ etapa.vencimiento }}">{{ etapa.vencimiento|timeuntil }}</strong></p>
+  <form class="form-horizontal" method="post" action=".">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <div class="row">
+    {% for form in formset %}
+      <div class="col-sm-4" style="margin-top: 1rem">
+        <div class="card {% cycle 'border-primary' 'border-success' 'border-secondary' 'border-warning' 'border-danger' 'border-info' 'border-dark' %}">
+          <div class="card-body">
+            {% with partido=form.partido %}
+              <h5 class="card-title">
+                {{ partido.local.name }} {{ partido.local.unicode_flag }} -
+                {{ partido.visitante.name }} {{ partido.visitante.unicode_flag }} 
+              </h5>
+              <h6 class="card-subtitle mb-2 text-muted">{{ partido.fecha }}</h6>
+              <p class="card-text">{{ form|crispy }}</p>
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-success">Guardar</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}

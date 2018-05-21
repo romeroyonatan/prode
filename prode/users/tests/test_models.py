@@ -1,5 +1,7 @@
 from test_plus.test import TestCase
 
+from prode.apuestas.tests import factories
+
 
 class TestUser(TestCase):
 
@@ -13,4 +15,21 @@ class TestUser(TestCase):
         )
 
     def test_get_absolute_url(self):
-        self.assertEqual(self.user.get_absolute_url(), "/users/testuser/")
+        self.assertEqual(self.user.get_absolute_url(), "/usuarios/testuser/")
+
+    def test_get_puntaje(self):
+        apuestas = factories.ApuestaFactory.create_batch(10, usuario=self.user)
+        puntaje = sum(apuesta.puntaje for apuesta in apuestas)
+        self.assertEqual(self.user.puntaje, puntaje)
+
+    def test_get_puntaje_partidos_sin_definir(self):
+        factories.ApuestaFactory.create_batch(
+            10,
+            usuario=self.user,
+            partido__goles_local=None,
+            partido__goles_visitante=None,
+        )
+        self.assertEqual(self.user.puntaje, 0)
+
+    def test_get_puntaje_sin_apuestas(self):
+        self.assertEqual(self.user.puntaje, 0)

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}Ranking{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-12">
+      <h1>Ranking mejores apostadores</h1>
+
+      <div class="alert alert-info">
+        Estás en el <a href="#{{ request.user.username }}">{{ puesto_actual|ordinal }} puesto</a>
+        {% if puesto_actual == 1 %}
+          <strong>Felicitaciones</strong>
+        {% endif %}
+      </div>
+
+      <table class="table table-hover">
+        <caption>Mejores apostadores</caption>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Puntos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for usuario, puntos in ranking %}
+          <tr {% if usuario in ganadores %}class="table-success"
+              {% elif forloop.counter == puesto_actual%}class="table-active"
+              {% endif %}>
+              <th>{% if usuario in ganadores %} 1  {# En caso de muchos ganadores, siempre muestro numero 1 #}
+                  {% else %}{{ forloop.counter }}
+                  {% endif %}</th>
+              <td>
+                <a name="{{ usuario }}"></a>
+                <a href="{% url 'users:detail' usuario %}">{{ usuario }}</a>
+              </td>
+              <td>{{ puntos }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock content %}

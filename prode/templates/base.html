@@ -1,4 +1,4 @@
-{% load static i18n compress%}<!DOCTYPE html>
+{% load static i18n compress apuestas%}<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -35,7 +35,7 @@
   <body>
 
     <div class="m-b-1">
-      <nav class="navbar navbar-expand-md navbar-light bg-light">
+      <nav class="navbar navbar-expand-md navbar-dark bg-primary">
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -43,38 +43,49 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'about' %}">About</a>
-            </li>
             {% if request.user.is_authenticated %}
+              {% get_etapas request.user as etapas %}
+              {% for etapa in etapas %}
+                <li class="nav-item {% if etapa == object %}active{% endif %}">
+                  <a class="nav-link {% if not etapa.publica %}disabled{% endif %}" href="{{ etapa.get_absolute_url }}">{{ etapa }}</a>
+                </li>
+              {% endfor %}
               <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% trans "My Profile" %}</a>
+                <a class="nav-link" href="{% url 'apuestas:ranking' %}">Ranking</a>
               </li>
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'account_logout' %}">{% trans "Sign Out" %}</a>
+                <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">Mi perfil</a>
+              </li>
+              <li class="nav-item">
+                {# URL provided by django-allauth/account/urls.py #}
+                <a class="nav-link" href="{% url 'account_logout' %}">Cerrar sesión</a>
               </li>
             {% else %}
               <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
+                <a class="nav-link" href="{% url 'about' %}">About</a>
               </li>
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
-                <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% trans "Sign In" %}</a>
+                <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">Registrarse</a>
+              </li>
+              <li class="nav-item">
+                {# URL provided by django-allauth/account/urls.py #}
+                <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">Iniciar sesión</a>
               </li>
             {% endif %}
           </ul>
+          <div class="my-2 my-lg-0">
+            {% if perms.apuestas.add_etapa %}
+              <a href="{% url 'apuestas:create' %}" class="btn btn-outline-light">Crear etapa</a>
+            {% endif %}
+          </div>
         </div>
       </nav>
 
     </div>
 
-    <div class="container">
+    <div class="container" style="margin-top:1rem">
 
       {% if messages %}
           {% for message in messages %}
@@ -83,7 +94,7 @@
       {% endif %}
 
       {% block content %}
-        <p>Use this document as a way to quick start any new project.</p>
+        <p>Prode permite apostar por los partidos del mundial entre amigos</p>
       {% endblock content %}
 
     </div> <!-- /container -->
