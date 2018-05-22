@@ -7,8 +7,33 @@
   {% if request.user.is_superuser %}
     <a href="{% url 'apuestas:update' etapa.slug %}" class="btn btn-outline-warning">Editar</a>
   {% endif %}
-  <h1>Apuestas para {{ etapa|upper }}</h1>
-  <p>Tiempo restante para apostar: <strong title="{{ etapa.vencimiento }}">{{ etapa.vencimiento|timeuntil }}</strong></p>
+  
+  <div class="jumbotron">
+    <h1 class="display-4">Apuestas para {{ etapa|upper }}</h1>
+    <p class="lead">Tiempo restante para apostar: <strong title="{{ etapa.vencimiento }}">{{ etapa.vencimiento|timeuntil }}</strong></p>
+    <hr class="my-4">
+    <h4>¿Cómo se apuesta?</h4>
+    <p>Puede apostar por dos cosas simultaneamente:</p>
+    <ul>
+      <li><strong>Ganador:</strong> Apuesta quién gana el partido o empate (suma <strong>1 punto</strong>)</li>
+      <li><strong>Goles:</strong> Apuesta la cantidad exacta de goles en el partido para cada equipo(suma <strong>3 puntos</strong>).</li>
+    </ul>
+    <p class="text-justify">
+      Usted puede apostar por cualquiera de los dos y no necesariamente tienen
+      que coincidir estas apuestas. Por ejemplo puede apostar por ganador local
+      y en resultado puede apostar por 0-0. Entonces, si el partido lo gana el
+      local, el usuario lleva un punto, pero si empatan 0-0 se lleva 3 puntos
+    </p>
+    <p class="text-justify">
+      Si acierta en el ganador y en el resultado, se lleva <strong>4 puntos</strong>, es decir
+      se suma el punto por ganador y los 3 puntos por resultado.
+    </p>
+    <p class="text-justify">
+      Puede modificar su apuesta cuantas veces quiera hasta que se termine el
+      tiempo para apostar.
+    </p>
+  </div>
+
   <form class="form-horizontal" method="post" action=".">
     {% csrf_token %}
     {{ formset.management_form }}
