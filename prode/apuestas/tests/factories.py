@@ -4,6 +4,7 @@ import factory
 import factory.fuzzy
 
 from django.utils import timezone
+from django.conf import settings
 
 from prode.apuestas import constants
 from prode.users.tests import factories as user_factories
@@ -22,8 +23,8 @@ class EtapaFactory(factory.django.DjangoModelFactory):
 class PartidoFactory(factory.django.DjangoModelFactory):
     etapa = factory.SubFactory(EtapaFactory)
     fecha = timezone.now() + datetime.timedelta(days=1)
-    local = factory.Faker('country_code')
-    visitante = factory.Faker('country_code')
+    local = factory.fuzzy.FuzzyChoice(settings.COUNTRIES_ONLY)
+    visitante = factory.fuzzy.FuzzyChoice(settings.COUNTRIES_ONLY)
     goles_local = factory.Faker('random_digit_not_null')
     goles_visitante = factory.Faker('random_digit_not_null')
 

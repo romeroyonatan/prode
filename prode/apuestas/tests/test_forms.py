@@ -25,9 +25,9 @@ class ApuestaFormTests(TestCase):
         form = forms.ApuestaForm(usuario=user, partido=partido)
         choices = form.fields['ganador'].choices
         self.assertEqual(choices[1][1], 'Gana Argentina')
-        self.assertEqual(choices[2][1], 'Gana Brazil')
+        self.assertEqual(choices[2][1], 'Gana Brasil')
         self.assertEqual(form.fields['goles_local'].label, 'Argentina')
-        self.assertEqual(form.fields['goles_visitante'].label, 'Brazil')
+        self.assertEqual(form.fields['goles_visitante'].label, 'Brasil')
 
     def test_save(self):
         user = self.make_user()
@@ -148,4 +148,4 @@ class CargarResultadosFormTests(TestCase):
         )
         form = forms.CargarResultadosForm(instance=partido)
         self.assertEqual(form.fields['goles_local'].label, 'Argentina')
-        self.assertEqual(form.fields['goles_visitante'].label, 'Brazil')
+        self.assertEqual(form.fields['goles_visitante'].label, 'Brasil')
