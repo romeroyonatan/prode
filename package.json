@@ -1,6 +1,6 @@
 {
   "name": "prode",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "dependencies": {},
   "devDependencies": {
     "browser-sync": "^2.14.0",
