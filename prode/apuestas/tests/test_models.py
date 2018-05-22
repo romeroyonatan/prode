@@ -66,14 +66,14 @@ class PartidoTests(TestCase):
                                                  visitante='BR',
                                                  goles_local=None,
                                                  goles_visitante=None)
-        self.assertEqual(str(partido), 'Argentina - Brazil')
+        self.assertEqual(str(partido), 'Argentina - Brasil')
 
     def test_str_partido_terminado(self):
         partido = factories.PartidoFactory.build(local='AR',
                                                  visitante='BR',
                                                  goles_local=1,
                                                  goles_visitante=2)
-        self.assertEqual(str(partido), 'Argentina 1 - 2 Brazil')
+        self.assertEqual(str(partido), 'Argentina 1 - 2 Brasil')
 
 
 class ApuestaTests(TestCase):
@@ -132,4 +132,4 @@ class ApuestaTests(TestCase):
                                            partido__goles_visitante=None,
                                            usuario__username='fulano')
         self.assertEqual(str(apuesta),
-                         'Apuesta "Argentina - Brazil" por fulano')
+                         'Apuesta "Argentina - Brasil" por fulano')
