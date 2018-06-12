@@ -260,6 +260,6 @@ STATICFILES_FINDERS += ['compressor.finders.CompressorFinder']
 # ------------------------------------------------------------------------------
 # Solo mostrar los paises que participan del mundial
 COUNTRIES_ONLY = ('AR', 'AU', 'BE', 'BR', 'CH', 'CO', 'CR', 'DE', 'DK', 'EG',
-                  'ES', 'FR', 'GR', 'HR', 'IR', 'IS', 'JP', 'KR', 'MA', 'MX',
+                  'ES', 'FR', 'GB', 'HR', 'IR', 'IS', 'JP', 'KR', 'MA', 'MX',
                   'NG', 'PA', 'PE', 'PL', 'PT', 'RS', 'RU', 'SA', 'SE', 'SN',
                   'TN', 'UY')
