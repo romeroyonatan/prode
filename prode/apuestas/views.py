@@ -105,8 +105,8 @@ class EtapaDetailView(mixins.LoginRequiredMixin, generic.DetailView):
 
     def get_puntajes(self):
         puntajes = models.Apuesta.objects.get_puntajes(etapa=self.object)
-        # obtengo los 5 primeros
-        return puntajes[:5]
+        # obtengo los 10 primeros
+        return puntajes[:10]
 
 
 class EtapaCreateView(mixins.PermissionRequiredMixin,
