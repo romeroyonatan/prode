@@ -153,7 +153,7 @@ class Apuesta(models.Model):
     class Meta:
         # me aseguro que solo exista una apuesta por partido por usuario
         unique_together = ('usuario', 'partido')
-        ordering = ('usuario__username',)
+        ordering = ('usuario__username', 'partido__fecha')
 
     def get_ganador_display(self):
         """Obtiene el ganador de forma bonita para mostrar"""
