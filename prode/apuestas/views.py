@@ -249,7 +249,7 @@ class CargarResultadosView(mixins.PermissionRequiredMixin,
         etapa = self.get_object()
         # Selecciono partidos que hayan terminado (se calcula mas o menos 2
         # horas de duracion por partido)
-        terminado = timezone.now() + timedelta(hours=2)
+        terminado = timezone.now() - timedelta(hours=2)
         # El admin puede editar resultados de partidos pasados
         if self.request.user.is_superuser:
             return etapa.partidos.filter(fecha__lt=terminado)
