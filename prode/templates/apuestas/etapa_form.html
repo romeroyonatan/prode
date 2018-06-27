@@ -49,10 +49,10 @@
   <script>
     $('#add_more').click(function(e) {
       e.preventDefault();
-      var form_idx = $('#id_form-TOTAL_FORMS').val();
+      var form_idx = $('#id_partidos-TOTAL_FORMS').val();
       var new_form = $('#empty_form').html().replace(/__prefix__/g, form_idx);
       $('#form_set').append(new_form);
-      $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+      $('#id_partidos-TOTAL_FORMS').val(parseInt(form_idx) + 1);
     });
   </script>
 {% endblock javascript %}
