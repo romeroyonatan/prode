@@ -1,5 +1,6 @@
 import itertools
 from collections import namedtuple
+from datetime import timedelta
 
 from django.db.models import (
     Case,
@@ -9,6 +10,7 @@ from django.db.models import (
     Value,
     When,
 )
+from django.utils import timezone
 
 from prode.apuestas.constants import (
     EMPATE,
@@ -30,6 +32,17 @@ def por_usuario(item):
 def por_puntaje(item):
     """Funcion auxiliar para ordenar por puntaje descendente."""
     return -item[1]
+
+
+class PartidoManager(Manager):
+    def terminados(self):
+        """Obtiene partidos terminados"""
+        terminado = timezone.now() - timedelta(minutes=105)
+        return self.get_queryset().filter(fecha__lt=terminado)
+
+    def no_empezados(self):
+        """Obtiene partidos no empezados"""
+        return self.get_queryset().filter(fecha__gt=timezone.now())
 
 
 class ApuestaManager(Manager):

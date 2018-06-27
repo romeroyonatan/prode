@@ -22,7 +22,7 @@ class EtapaFactory(factory.django.DjangoModelFactory):
 
 class PartidoFactory(factory.django.DjangoModelFactory):
     etapa = factory.SubFactory(EtapaFactory)
-    fecha = timezone.now() + datetime.timedelta(days=1)
+    fecha = factory.Faker("future_datetime", tzinfo=timezone.utc)
     local = factory.fuzzy.FuzzyChoice(settings.COUNTRIES_ONLY)
     visitante = factory.fuzzy.FuzzyChoice(settings.COUNTRIES_ONLY)
     goles_local = factory.Faker('random_digit_not_null')

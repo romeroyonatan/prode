@@ -83,6 +83,7 @@ class Partido(models.Model):
     # estos campos se definen cuando la etapa esta cerrada
     goles_local = models.PositiveSmallIntegerField(null=True)
     goles_visitante = models.PositiveSmallIntegerField(null=True)
+    objects = managers.PartidoManager()
 
     def terminado(self):
         """Se asume partido terminado cuando se cargan los resultados."""

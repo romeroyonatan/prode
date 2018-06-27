@@ -1,6 +1,5 @@
 import itertools
 import functools
-from datetime import timedelta
 
 from django import shortcuts
 from django.contrib import messages
@@ -10,7 +9,6 @@ from django.forms import (
     modelformset_factory,
     inlineformset_factory,
 )
-from django.utils import timezone
 from django.views import generic
 
 from . import (
@@ -43,7 +41,7 @@ class AdministrarApuestasFormView(mixins.LoginRequiredMixin,
     def get_form_class(self):
         """Obtiene la clase del formulario a traves del factory de formset."""
         self.object = self.get_object()
-        cantidad_partidos = self.object.partidos.count()
+        cantidad_partidos = self.object.partidos.no_empezados().count()
         return formset_factory(forms.ApuestaForm,
                                formset=forms.ApuestaBaseFormSet,
                                min_num=cantidad_partidos,
@@ -247,14 +245,10 @@ class CargarResultadosView(mixins.PermissionRequiredMixin,
         `goles_visitante` sea None.
         """
         etapa = self.get_object()
-        # Selecciono partidos que hayan terminado (se calcula mas o menos 2
-        # horas de duracion por partido)
-        terminado = timezone.now() - timedelta(hours=2)
         # El admin puede editar resultados de partidos pasados
         if self.request.user.is_superuser:
-            return etapa.partidos.filter(fecha__lt=terminado)
-        return etapa.partidos.filter(
-            fecha__lt=terminado,
+            return etapa.partidos.terminados()
+        return etapa.partidos.terminados().filter(
             goles_local__isnull=True,
             goles_visitante__isnull=True,
         )

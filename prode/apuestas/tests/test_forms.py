@@ -1,8 +1,12 @@
+from django.forms import formset_factory
+from django.utils import timezone
+
 from test_plus.test import TestCase
 
 from prode.apuestas import (
     constants,
     forms,
+    models,
 )
 
 from . import factories
@@ -110,6 +114,18 @@ class ApuestaBaseFormSetTests(TestCase):
         etapa = partido.etapa
         form = forms.ApuestaBaseFormSet(usuario=user, etapa=etapa)
         self.assertIsNone(form.get_apuesta(partido))
+
+    def test_no_cambiar_apuesta_partido_pasado(self):
+        user = self.make_user()
+        partido = factories.PartidoFactory(fecha=timezone.now())
+        cantidad_partidos = models.Partido.objects.no_empezados().count()
+        ApuestaFormSet = formset_factory(forms.ApuestaForm,
+                                         forms.ApuestaBaseFormSet,
+                                         min_num=cantidad_partidos,
+                                         max_num=cantidad_partidos,
+                                         extra=0)
+        form = ApuestaFormSet(usuario=user, etapa=partido.etapa)
+        self.assertEqual(len(form), 0)
 
 
 class EtapaFormTests(TestCase):

@@ -1,3 +1,7 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from test_plus.test import TestCase
 
 from prode.apuestas import (
@@ -56,3 +60,20 @@ class ApuestaManagerTests(TestCase):
         ]
         puntajes = models.Apuesta.objects.get_puntajes(etapa=etapa)
         self.assertEqual(puntajes, expected)
+
+
+class PartidoManagerTests(TestCase):
+    def test_terminados(self):
+        terminado = timezone.now() - timedelta(hours=2)
+        factories.PartidoFactory(fecha=terminado)
+        self.assertEqual(models.Partido.objects.terminados().count(), 1)
+
+    def test_partido_en_juego(self):
+        factories.PartidoFactory(fecha=timezone.now())
+        self.assertEqual(models.Partido.objects.terminados().count(), 0)
+        self.assertEqual(models.Partido.objects.no_empezados().count(), 0)
+
+
+    def test_no_empezados(self):
+        factories.PartidoFactory()
+        self.assertEqual(models.Partido.objects.no_empezados().count(), 1)

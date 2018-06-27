@@ -12,6 +12,7 @@ from prode.apuestas import (
 
 from . import factories
 
+
 class AdministrarApuestasTest(TestCase):
     def test_context(self):
         etapa = factories.EtapaFactory()
@@ -353,8 +354,9 @@ class CargarResultadosView(TestCase):
         self.assertNotIn(partido_futuro, formset.queryset)
 
     def test_mostrar_partidos_pasados(self):
+        terminado = timezone.now() - datetime.timedelta(hours=2)
         partido_pasado = factories.PartidoFactory(
-            fecha=timezone.now(),
+            fecha=terminado,
             goles_local=None,
             goles_visitante=None,
         )
@@ -379,8 +381,9 @@ class CargarResultadosView(TestCase):
         self.assertNotIn(partido, formset.queryset)
 
     def test_cargar_resultados(self):
+        terminado = timezone.now() - datetime.timedelta(hours=2)
         partido = factories.PartidoFactory(
-            fecha=timezone.now(),
+            fecha=terminado,
             goles_local=None,
             goles_visitante=None,
         )
@@ -409,10 +412,11 @@ class CargarResultadosView(TestCase):
             self.response_302()
 
     def test_mostrar_partidos_con_resultados_solo_admin(self):
+        terminado = timezone.now() - datetime.timedelta(hours=2)
         partido = factories.PartidoFactory(
-            fecha=timezone.now(),
-            goles_local=1,
-            goles_visitante=1,
+            fecha=terminado,
+            goles_local=None,
+            goles_visitante=None,
         )
         etapa = partido.etapa
         user = self.make_user()
@@ -422,6 +426,7 @@ class CargarResultadosView(TestCase):
             self.get('apuestas:cargar_resultados', slug=etapa.slug)
         formset = self.context['formset']
         self.assertIn(partido, formset.queryset)
+
 
 class RankingViewTests(TestCase):
     def hacer_apuestas(self):

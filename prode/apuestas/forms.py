@@ -53,7 +53,7 @@ class ApuestaBaseFormSet(forms.BaseFormSet):
         """Guarda atributos ``usuario`` y ``etapa``"""
         self.usuario = kwargs.pop('usuario')
         self.etapa = kwargs.pop('etapa')
-        self.partidos = self.etapa.partidos.all().order_by('id')
+        self.partidos = self.etapa.partidos.no_empezados().order_by('id')
         super().__init__(*args, **kwargs)
 
     def get_form_kwargs(self, index):
@@ -69,7 +69,7 @@ class ApuestaBaseFormSet(forms.BaseFormSet):
     def get_apuesta(self, partido):
         """Obtiene apuesta asociada al partido hecha por el usuario.
 
-	:returns: ``Apuesta`` o None
+        :returns: ``Apuesta`` o None
         """
         apuesta = partido.apuestas.filter(usuario=self.usuario)
         if not apuesta.exists():
